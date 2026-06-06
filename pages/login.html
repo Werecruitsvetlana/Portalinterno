@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>We Recruit DR — Login</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #063958;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-container {
+      background: #fff;
+      border-radius: 12px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .logo h1 {
+      color: #063958;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .logo p {
+      color: #0F6B9F;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #063958;
+      margin-bottom: 6px;
+    }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #dde5ed;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    input:focus {
+      border-color: #0F6B9F;
+    }
+    .btn {
+      width: 100%;
+      padding: 13px;
+      background: #0F6B9F;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #063958; }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: transparent;
+      color: #0F6B9F;
+      border: 1.5px solid #0F6B9F;
+      margin-top: 10px;
+    }
+    .btn-secondary:hover {
+      background: #f0f7fb;
+    }
+    .error {
+      background: #fef2f2;
+      color: #b91c1c;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .success {
+      background: #f0fdf4;
+      color: #166534;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .toggle {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 13px;
+      color: #666;
+    }
+    .toggle a {
+      color: #0F6B9F;
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .toggle a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="logo">
+      <h1>We Recruit DR</h1>
+      <p>Portal de Gestión</p>
+    </div>
+
+    <div class="error" id="error"></div>
+    <div class="success" id="success"></div>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="email" id="email" required placeholder="tu@email.com">
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="password" required placeholder="••••••••" minlength="6">
+      </div>
+      <button type="submit" class="btn" id="submitBtn">Iniciar sesión</button>
+      <button type="button" class="btn btn-secondary" id="toggleBtn" onclick="toggleMode()">Crear cuenta</button>
+    </form>
+
+    <div class="toggle">
+      <span id="toggleText">¿No tienes cuenta? </span>
+      <a id="toggleLink" onclick="toggleMode()">Regístrate</a>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://bohkpbkktcnwsglvcrax.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvaGtwYmtrdGNud3NnbHZjcmF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NjY0MjYsImV4cCI6MjA5NjM0MjQyNn0.yW7atZCGHqipQ-KE-UH5J3DPlXvud5lzf5LMs3J9YzA';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let isSignUp = false;
+
+    // Si ya está autenticado, redirigir
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) window.location.href = 'index.html';
+    });
+
+    function toggleMode() {
+      isSignUp = !isSignUp;
+      document.getElementById('submitBtn').textContent = isSignUp ? 'Crear cuenta' : 'Iniciar sesión';
+      document.getElementById('toggleBtn').textContent = isSignUp ? 'Iniciar sesión' : 'Crear cuenta';
+      document.getElementById('toggleText').textContent = isSignUp ? '¿Ya tienes cuenta? ' : '¿No tienes cuenta? ';
+      document.getElementById('toggleLink').textContent = isSignUp ? 'Inicia sesión' : 'Regístrate';
+      hideMessages();
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('error');
+      el.textContent = msg;
+      el.style.display = 'block';
+      document.getElementById('success').style.display = 'none';
+    }
+
+    function showSuccess(msg) {
+      const el = document.getElementById('success');
+      el.textContent = msg;
+      el.style.display = 'block';
+      document.getElementById('error').style.display = 'none';
+    }
+
+    function hideMessages() {
+      document.getElementById('error').style.display = 'none';
+      document.getElementById('success').style.display = 'none';
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideMessages();
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const btn = document.getElementById('submitBtn');
+
+      btn.disabled = true;
+      btn.textContent = isSignUp ? 'Creando cuenta...' : 'Ingresando...';
+
+      try {
+        if (isSignUp) {
+          const { data, error } = await supabase.auth.signUp({ email, password });
+          if (error) throw error;
+          if (data.user && !data.session) {
+            showSuccess('Cuenta creada. Revisa tu correo para confirmar, o inicia sesión directamente.');
+          } else {
+            window.location.href = 'index.html';
+          }
+        } else {
+          const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          window.location.href = 'index.html';
+        }
+      } catch (err) {
+        const msgs = {
+          'Invalid login credentials': 'Correo o contraseña incorrectos',
+          'User already registered': 'Este correo ya tiene cuenta. Inicia sesión.',
+          'Password should be at least 6 characters': 'La contraseña debe tener al menos 6 caracteres'
+        };
+        showError(msgs[err.message] || err.message);
+      }
+
+      btn.disabled = false;
+      btn.textContent = isSignUp ? 'Crear cuenta' : 'Iniciar sesión';
+    });
+  </script>
+</body>
+</html>

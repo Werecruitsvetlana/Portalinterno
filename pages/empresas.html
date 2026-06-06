@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Empresas — We Recruit DR</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #1a1a1a; }
+    .sidebar {
+      position: fixed; left: 0; top: 0; width: 220px; height: 100vh;
+      background: #063958; padding: 24px 0; display: flex; flex-direction: column;
+    }
+    .sidebar-logo { color: #CEE4CC; font-size: 18px; font-weight: 700; padding: 0 20px; margin-bottom: 32px; }
+    .sidebar a {
+      display: flex; align-items: center; gap: 10px; padding: 11px 20px;
+      color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; transition: all 0.15s;
+    }
+    .sidebar a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .sidebar a.active { background: rgba(255,255,255,0.12); color: #CEE4CC; font-weight: 600; }
+    .sidebar-bottom { margin-top: auto; padding: 0 20px; }
+    .sidebar-bottom button {
+      width: 100%; padding: 10px; background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.7); border: none; border-radius: 6px; font-size: 13px; cursor: pointer;
+    }
+    .sidebar-bottom button:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+    .main { margin-left: 220px; padding: 32px; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .page-header h1 { font-size: 24px; color: #063958; }
+
+    .controls { display: flex; gap: 12px; margin-bottom: 20px; }
+    .search-input {
+      flex: 1; padding: 10px 14px; border: 1.5px solid #dde5ed;
+      border-radius: 8px; font-size: 14px; outline: none;
+    }
+    .search-input:focus { border-color: #0F6B9F; }
+
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .btn-primary { background: #0F6B9F; color: #fff; }
+    .btn-primary:hover { background: #063958; }
+    .btn-secondary { background: #e8ecf1; color: #063958; }
+    .btn-secondary:hover { background: #dde5ed; }
+    .btn-danger { background: #fef2f2; color: #b91c1c; }
+    .btn-danger:hover { background: #fde8e8; }
+
+    /* CARDS */
+    .empresas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .empresa-card {
+      background: #fff; border-radius: 10px; padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06); cursor: pointer;
+      transition: box-shadow 0.15s; border-left: 4px solid #CEE4CC;
+    }
+    .empresa-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .empresa-name { font-size: 17px; font-weight: 600; color: #063958; margin-bottom: 6px; }
+    .empresa-detail { font-size: 13px; color: #666; margin-bottom: 3px; }
+    .empresa-stats {
+      display: flex; gap: 16px; margin-top: 12px; padding-top: 12px;
+      border-top: 1px solid #f0f0f0;
+    }
+    .empresa-stat { font-size: 12px; color: #888; }
+    .empresa-stat strong { color: #063958; font-size: 16px; display: block; }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: #888; }
+    .empty-state p { margin-top: 8px; font-size: 14px; }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      z-index: 100; align-items: center; justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: #fff; border-radius: 12px; padding: 32px; width: 100%;
+      max-width: 520px; max-height: 90vh; overflow-y: auto;
+    }
+    .modal h2 { font-size: 20px; color: #063958; margin-bottom: 24px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: #063958; margin-bottom: 5px; }
+    .form-group input, .form-group textarea {
+      width: 100%; padding: 10px 12px; border: 1.5px solid #dde5ed;
+      border-radius: 8px; font-size: 14px; outline: none; font-family: inherit;
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group input:focus, .form-group textarea:focus { border-color: #0F6B9F; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; padding: 12px 20px;
+      background: #063958; color: #fff; border-radius: 8px; font-size: 14px; z-index: 200; display: none;
+    }
+    .toast.show { display: block; }
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo">We Recruit DR</div>
+    <a href="index.html">📊 Dashboard</a>
+    <a href="candidatos.html">👤 Candidatos</a>
+    <a href="posiciones.html">💼 Posiciones</a>
+    <a href="empresas.html" class="active">🏢 Empresas</a>
+    <div class="sidebar-bottom">
+      <button onclick="logout()">Cerrar sesión</button>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="page-header">
+      <h1>Empresas-Cliente</h1>
+      <button class="btn btn-primary" onclick="openModal()">+ Nueva empresa</button>
+    </div>
+
+    <div class="controls">
+      <input type="text" class="search-input" id="searchInput" placeholder="Buscar por nombre o industria..." oninput="filterEmpresas()">
+    </div>
+
+    <div class="empresas-grid" id="empresasGrid"></div>
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <p style="font-size:32px;">🏢</p>
+      <p>No hay empresas registradas. Agrega tu primera empresa-cliente.</p>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <h2 id="modalTitle">Nueva empresa</h2>
+      <form id="empresaForm" onsubmit="saveEmpresa(event)">
+        <input type="hidden" id="empresaId">
+        <div class="form-group">
+          <label>Nombre de la empresa *</label>
+          <input type="text" id="f_nombre" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Contacto principal</label>
+            <input type="text" id="f_contacto">
+          </div>
+          <div class="form-group">
+            <label>Industria / Sector</label>
+            <input type="text" id="f_industria">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input type="text" id="f_telefono">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="f_email">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>RNC</label>
+            <input type="text" id="f_rnc">
+          </div>
+          <div class="form-group">
+            <label>Dirección</label>
+            <input type="text" id="f_direccion">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notas</label>
+          <textarea id="f_notas" placeholder="Notas sobre esta empresa..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="deleteBtn" style="display:none;" onclick="deleteEmpresa()">Eliminar</button>
+          <button type="submit" class="btn btn-primary" id="saveBtn">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://bohkpbkktcnwsglvcrax.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvaGtwYmtrdGNud3NnbHZjcmF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NjY0MjYsImV4cCI6MjA5NjM0MjQyNn0.yW7atZCGHqipQ-KE-UH5J3DPlXvud5lzf5LMs3J9YzA';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let allEmpresas = [];
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) window.location.href = 'login.html';
+      else loadEmpresas();
+    });
+
+    async function logout() {
+      await supabase.auth.signOut();
+      window.location.href = 'login.html';
+    }
+
+    async function loadEmpresas() {
+      const { data } = await supabase.from('empresas').select('*').order('nombre');
+      allEmpresas = data || [];
+
+      // Cargar stats por empresa
+      for (let emp of allEmpresas) {
+        const { count: posCount } = await supabase.from('posiciones').select('*', { count: 'exact', head: true }).eq('empresa_id', emp.id);
+        const { count: posAbiertas } = await supabase.from('posiciones').select('*', { count: 'exact', head: true }).eq('empresa_id', emp.id).eq('estado', 'abierta');
+        emp._totalPos = posCount || 0;
+        emp._abiertasPos = posAbiertas || 0;
+      }
+
+      renderEmpresas(allEmpresas);
+    }
+
+    function filterEmpresas() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = allEmpresas.filter(e =>
+        (e.nombre || '').toLowerCase().includes(q) ||
+        (e.industria || '').toLowerCase().includes(q)
+      );
+      renderEmpresas(filtered);
+    }
+
+    function renderEmpresas(empresas) {
+      const grid = document.getElementById('empresasGrid');
+      const empty = document.getElementById('emptyState');
+
+      if (empresas.length === 0) {
+        grid.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+
+      grid.innerHTML = empresas.map(e => `<div class="empresa-card" onclick="editEmpresa('${e.id}')">
+        <div class="empresa-name">${e.nombre}</div>
+        ${e.contacto_nombre ? `<div class="empresa-detail">👤 ${e.contacto_nombre}</div>` : ''}
+        ${e.industria ? `<div class="empresa-detail">🏭 ${e.industria}</div>` : ''}
+        ${e.contacto_email ? `<div class="empresa-detail">✉️ ${e.contacto_email}</div>` : ''}
+        ${e.contacto_telefono ? `<div class="empresa-detail">📞 ${e.contacto_telefono}</div>` : ''}
+        <div class="empresa-stats">
+          <div class="empresa-stat"><strong>${e._totalPos}</strong>posiciones total</div>
+          <div class="empresa-stat"><strong>${e._abiertasPos}</strong>abiertas</div>
+        </div>
+      </div>`).join('');
+    }
+
+    function openModal(empresa = null) {
+      document.getElementById('modal').classList.add('active');
+      document.getElementById('empresaForm').reset();
+
+      if (empresa) {
+        document.getElementById('modalTitle').textContent = 'Editar empresa';
+        document.getElementById('deleteBtn').style.display = 'inline-block';
+        document.getElementById('empresaId').value = empresa.id;
+        document.getElementById('f_nombre').value = empresa.nombre || '';
+        document.getElementById('f_contacto').value = empresa.contacto_nombre || '';
+        document.getElementById('f_industria').value = empresa.industria || '';
+        document.getElementById('f_telefono').value = empresa.contacto_telefono || '';
+        document.getElementById('f_email').value = empresa.contacto_email || '';
+        document.getElementById('f_rnc').value = empresa.rnc || '';
+        document.getElementById('f_direccion').value = empresa.direccion || '';
+        document.getElementById('f_notas').value = empresa.notas || '';
+      } else {
+        document.getElementById('modalTitle').textContent = 'Nueva empresa';
+        document.getElementById('deleteBtn').style.display = 'none';
+        document.getElementById('empresaId').value = '';
+      }
+    }
+
+    function closeModal() { document.getElementById('modal').classList.remove('active'); }
+
+    function editEmpresa(id) {
+      const e = allEmpresas.find(x => x.id === id);
+      if (e) openModal(e);
+    }
+
+    async function saveEmpresa(ev) {
+      ev.preventDefault();
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+
+      const id = document.getElementById('empresaId').value;
+      const data = {
+        nombre: document.getElementById('f_nombre').value.trim(),
+        contacto_nombre: document.getElementById('f_contacto').value.trim() || null,
+        industria: document.getElementById('f_industria').value.trim() || null,
+        contacto_telefono: document.getElementById('f_telefono').value.trim() || null,
+        contacto_email: document.getElementById('f_email').value.trim() || null,
+        rnc: document.getElementById('f_rnc').value.trim() || null,
+        direccion: document.getElementById('f_direccion').value.trim() || null,
+        notas: document.getElementById('f_notas').value.trim() || null,
+      };
+
+      try {
+        if (id) {
+          const { error } = await supabase.from('empresas').update(data).eq('id', id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from('empresas').insert(data);
+          if (error) throw error;
+        }
+        closeModal();
+        await loadEmpresas();
+        showToast(id ? 'Empresa actualizada' : 'Empresa creada');
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Guardar';
+    }
+
+    async function deleteEmpresa() {
+      const id = document.getElementById('empresaId').value;
+      if (!id) return;
+      if (!confirm('¿Eliminar esta empresa? Las posiciones vinculadas quedarán sin empresa.')) return;
+
+      const { error } = await supabase.from('empresas').delete().eq('id', id);
+      if (error) { alert('Error: ' + error.message); return; }
+
+      closeModal();
+      await loadEmpresas();
+      showToast('Empresa eliminada');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+    document.getElementById('modal').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeModal(); });
+  </script>
+</body>
+</html>
