@@ -1,0 +1,6 @@
+{
+  "outputDirectory": "pages",
+  "rewrites": [
+    { "source": "/", "destination": "/login.html" }
+  ]
+}
