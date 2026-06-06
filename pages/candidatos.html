@@ -326,6 +326,7 @@
             <th>Puntuación</th>
             <th>Fuente</th>
             <th>Fecha</th>
+            <th>CV</th>
             <th></th>
           </tr>
         </thead>
@@ -421,6 +422,9 @@
         <div class="form-group">
           <label>CV (PDF)</label>
           <input type="file" id="f_cv" accept=".pdf,.doc,.docx">
+          <div id="cvLinkModal" style="display:none;margin-top:6px;">
+            <a id="cvLinkAnchorModal" href="#" target="_blank" style="font-size:13px;color:#0F6B9F;font-weight:600;">📄 Ver CV actual →</a>
+          </div>
         </div>
 
         <h3 style="font-size:15px; color:#063958; margin:20px 0 12px;">Evaluación por criterios</h3>
@@ -552,6 +556,9 @@
           <td><span class="stars">${stars}</span></td>
           <td>${fuente}</td>
           <td style="font-size:13px;color:#888;">${fecha}</td>
+          <td>
+            ${c.cv_url ? `<a href="${c.cv_url}" target="_blank" class="link" style="display:inline-flex;align-items:center;gap:4px;">📄 CV</a>` : '<span style="color:#bbb;font-size:12px;">—</span>'}
+          </td>
           <td><a class="link" onclick="editCandidate('${c.id}')">Editar</a></td>
         </tr>`;
       }).join('');
@@ -582,6 +589,16 @@
         } else {
           vacanteGroup.style.display = 'none';
         }
+        // Mostrar link al CV si existe
+        const cvLink = document.getElementById('cvLinkModal');
+        const cvAnchor = document.getElementById('cvLinkAnchorModal');
+        if (candidate.cv_url) {
+          cvLink.style.display = 'block';
+          cvAnchor.href = candidate.cv_url;
+        } else {
+          cvLink.style.display = 'none';
+        }
+
         document.getElementById('f_nombre').value = candidate.nombre || '';
         document.getElementById('f_apellido').value = candidate.apellido || '';
         document.getElementById('f_email').value = candidate.email || '';
