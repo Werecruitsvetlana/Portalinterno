@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Posiciones — We Recruit DR</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f7fa;
+      color: #1a1a1a;
+    }
+    .sidebar {
+      position: fixed; left: 0; top: 0; width: 220px; height: 100vh;
+      background: #063958; padding: 24px 0; display: flex; flex-direction: column;
+    }
+    .sidebar-logo { color: #CEE4CC; font-size: 18px; font-weight: 700; padding: 0 20px; margin-bottom: 32px; }
+    .sidebar a {
+      display: flex; align-items: center; gap: 10px; padding: 11px 20px;
+      color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; transition: all 0.15s;
+    }
+    .sidebar a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .sidebar a.active { background: rgba(255,255,255,0.12); color: #CEE4CC; font-weight: 600; }
+    .sidebar-bottom { margin-top: auto; padding: 0 20px; }
+    .sidebar-bottom button {
+      width: 100%; padding: 10px; background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.7); border: none; border-radius: 6px; font-size: 13px; cursor: pointer;
+    }
+    .sidebar-bottom button:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+    .main { margin-left: 220px; padding: 32px; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .page-header h1 { font-size: 24px; color: #063958; }
+
+    .controls { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .search-input {
+      flex: 1; min-width: 200px; padding: 10px 14px; border: 1.5px solid #dde5ed;
+      border-radius: 8px; font-size: 14px; outline: none;
+    }
+    .search-input:focus { border-color: #0F6B9F; }
+    .filter-select {
+      padding: 10px 14px; border: 1.5px solid #dde5ed; border-radius: 8px;
+      font-size: 14px; background: #fff; outline: none; cursor: pointer;
+    }
+
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .btn-primary { background: #0F6B9F; color: #fff; }
+    .btn-primary:hover { background: #063958; }
+    .btn-secondary { background: #e8ecf1; color: #063958; }
+    .btn-secondary:hover { background: #dde5ed; }
+    .btn-danger { background: #fef2f2; color: #b91c1c; }
+    .btn-danger:hover { background: #fde8e8; }
+
+    /* CARDS */
+    .positions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+    .pos-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      border-left: 4px solid #0F6B9F;
+      cursor: pointer;
+      transition: box-shadow 0.15s;
+    }
+    .pos-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .pos-card.estado-cubierta { border-left-color: #16a34a; }
+    .pos-card.estado-cancelada { border-left-color: #dc2626; opacity: 0.7; }
+    .pos-card.estado-en_proceso { border-left-color: #f59e0b; }
+
+    .pos-title { font-size: 16px; font-weight: 600; color: #063958; margin-bottom: 4px; }
+    .pos-empresa { font-size: 13px; color: #666; margin-bottom: 12px; }
+    .pos-details { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+    .pos-detail { font-size: 13px; color: #555; }
+    .pos-detail strong { color: #333; }
+    .pos-footer { display: flex; justify-content: space-between; align-items: center; }
+
+    .badge {
+      display: inline-block; padding: 4px 10px; border-radius: 12px;
+      font-size: 12px; font-weight: 600;
+    }
+    .badge-abierta { background: #dbeafe; color: #1d4ed8; }
+    .badge-en_proceso { background: #fef3c7; color: #92400e; }
+    .badge-cubierta { background: #dcfce7; color: #166534; }
+    .badge-cancelada { background: #fef2f2; color: #b91c1c; }
+
+    .pos-date { font-size: 12px; color: #999; }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: #888; }
+    .empty-state p { margin-top: 8px; font-size: 14px; }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      z-index: 100; align-items: center; justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: #fff; border-radius: 12px; padding: 32px; width: 100%;
+      max-width: 560px; max-height: 90vh; overflow-y: auto;
+    }
+    .modal h2 { font-size: 20px; color: #063958; margin-bottom: 24px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: #063958; margin-bottom: 5px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 10px 12px; border: 1.5px solid #dde5ed;
+      border-radius: 8px; font-size: 14px; outline: none; font-family: inherit;
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #0F6B9F; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+    .form-full { grid-column: 1 / -1; }
+
+    /* CANDIDATOS EN POSICIÓN */
+    .section-title { font-size: 15px; font-weight: 600; color: #063958; margin: 20px 0 12px; }
+    .assigned-list { margin-bottom: 16px; }
+    .assigned-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 12px; background: #f8f9fb; border-radius: 6px; margin-bottom: 6px; font-size: 13px;
+    }
+    .assigned-item select {
+      padding: 4px 8px; border: 1px solid #dde5ed; border-radius: 4px; font-size: 12px;
+    }
+    .add-candidate-row { display: flex; gap: 8px; }
+    .add-candidate-row select { flex: 1; padding: 8px; border: 1px solid #dde5ed; border-radius: 6px; font-size: 13px; }
+    .add-candidate-row button { padding: 8px 14px; }
+
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; padding: 12px 20px;
+      background: #063958; color: #fff; border-radius: 8px; font-size: 14px; z-index: 200; display: none;
+    }
+    .toast.show { display: block; }
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo">We Recruit DR</div>
+    <a href="index.html">📊 Dashboard</a>
+    <a href="candidatos.html">👤 Candidatos</a>
+    <a href="posiciones.html" class="active">💼 Posiciones</a>
+    <a href="empresas.html">🏢 Empresas</a>
+    <div class="sidebar-bottom">
+      <button onclick="logout()">Cerrar sesión</button>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="page-header">
+      <h1>Posiciones</h1>
+      <button class="btn btn-primary" onclick="openModal()">+ Nueva posición</button>
+    </div>
+
+    <div class="controls">
+      <input type="text" class="search-input" id="searchInput" placeholder="Buscar por título o empresa..." oninput="filterPositions()">
+      <select class="filter-select" id="filterEstado" onchange="filterPositions()">
+        <option value="">Todos los estados</option>
+        <option value="abierta">Abierta</option>
+        <option value="en_proceso">En proceso</option>
+        <option value="cubierta">Cubierta</option>
+        <option value="cancelada">Cancelada</option>
+      </select>
+    </div>
+
+    <div class="positions-grid" id="positionsGrid"></div>
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <p style="font-size:32px;">💼</p>
+      <p>No hay posiciones todavía. Crea tu primera posición.</p>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <h2 id="modalTitle">Nueva posición</h2>
+      <form id="positionForm" onsubmit="savePosition(event)">
+        <input type="hidden" id="positionId">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Título del puesto *</label>
+            <input type="text" id="f_titulo" required>
+          </div>
+          <div class="form-group">
+            <label>Empresa *</label>
+            <select id="f_empresa" required>
+              <option value="">Seleccionar empresa...</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Departamento</label>
+            <input type="text" id="f_departamento">
+          </div>
+          <div class="form-group">
+            <label>Ubicación</label>
+            <input type="text" id="f_ubicacion">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Salario ofrecido (RD$)</label>
+            <input type="number" id="f_salario" min="0" step="1000">
+          </div>
+          <div class="form-group">
+            <label>Estado</label>
+            <select id="f_estado">
+              <option value="abierta">Abierta</option>
+              <option value="en_proceso">En proceso</option>
+              <option value="cubierta">Cubierta</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Fecha de apertura</label>
+            <input type="date" id="f_fecha_apertura">
+          </div>
+          <div class="form-group">
+            <label>Fecha límite</label>
+            <input type="date" id="f_fecha_limite">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Requisitos</label>
+          <textarea id="f_requisitos" placeholder="Experiencia, habilidades, certificaciones..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Notas</label>
+          <textarea id="f_notas" placeholder="Notas internas sobre esta posición..."></textarea>
+        </div>
+
+        <!-- Candidatos asignados (solo en edición) -->
+        <div id="candidatesSection" style="display:none;">
+          <h3 class="section-title">Candidatos asignados</h3>
+          <div class="assigned-list" id="assignedList"></div>
+          <div class="add-candidate-row">
+            <select id="addCandidateSelect"><option value="">Agregar candidato...</option></select>
+            <button type="button" class="btn btn-secondary" onclick="addCandidateToPosition()" style="padding:8px 14px;font-size:13px;">Agregar</button>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="deleteBtn" style="display:none;" onclick="deletePosition()">Eliminar</button>
+          <button type="submit" class="btn btn-primary" id="saveBtn">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://bohkpbkktcnwsglvcrax.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvaGtwYmtrdGNud3NnbHZjcmF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NjY0MjYsImV4cCI6MjA5NjM0MjQyNn0.yW7atZCGHqipQ-KE-UH5J3DPlXvud5lzf5LMs3J9YzA';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let allPositions = [];
+    let allEmpresas = [];
+    let allCandidatos = [];
+
+    sb.auth.getSession().then(({ data: { session } }) => {
+      if (!session) window.location.href = 'login.html';
+      else init();
+    });
+
+    async function logout() {
+      await sb.auth.signOut();
+      window.location.href = 'login.html';
+    }
+
+    async function init() {
+      await Promise.all([loadEmpresas(), loadCandidatos()]);
+      await loadPositions();
+    }
+
+    async function loadEmpresas() {
+      const { data } = await sb.from('empresas').select('id, nombre').order('nombre');
+      allEmpresas = data || [];
+    }
+
+    async function loadCandidatos() {
+      const { data } = await sb.from('candidatos').select('id, nombre').order('nombre');
+      allCandidatos = data || [];
+    }
+
+    async function loadPositions() {
+      const { data, error } = await supabase
+        .from('posiciones')
+        .select('*, empresas(nombre)')
+        .order('created_at', { ascending: false });
+
+      if (error) { console.error(error); return; }
+      allPositions = data || [];
+      renderPositions(allPositions);
+    }
+
+    function filterPositions() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const estado = document.getElementById('filterEstado').value;
+      const filtered = allPositions.filter(p => {
+        const matchText = !q ||
+          (p.titulo || '').toLowerCase().includes(q) ||
+          (p.empresas?.nombre || '').toLowerCase().includes(q);
+        const matchEstado = !estado || p.estado === estado;
+        return matchText && matchEstado;
+      });
+      renderPositions(filtered);
+    }
+
+    function renderPositions(positions) {
+      const grid = document.getElementById('positionsGrid');
+      const empty = document.getElementById('emptyState');
+
+      if (positions.length === 0) {
+        grid.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+
+      const estadoLabels = { abierta: 'Abierta', en_proceso: 'En proceso', cubierta: 'Cubierta', cancelada: 'Cancelada' };
+
+      grid.innerHTML = positions.map(p => {
+        const salario = p.salario_ofrecido ? `RD$ ${Number(p.salario_ofrecido).toLocaleString()}` : 'No definido';
+        const empresa = p.empresas?.nombre || 'Sin empresa';
+        const fecha = p.fecha_apertura ? new Date(p.fecha_apertura + 'T00:00:00').toLocaleDateString('es-DO') : '';
+        const limite = p.fecha_limite ? new Date(p.fecha_limite + 'T00:00:00').toLocaleDateString('es-DO') : '';
+
+        return `<div class="pos-card estado-${p.estado}" onclick="editPosition('${p.id}')">
+          <div class="pos-title">${p.titulo}</div>
+          <div class="pos-empresa">🏢 ${empresa}</div>
+          <div class="pos-details">
+            <span class="pos-detail"><strong>Salario:</strong> ${salario}</span>
+            ${p.ubicacion ? `<span class="pos-detail"><strong>Ubicación:</strong> ${p.ubicacion}</span>` : ''}
+            ${p.departamento ? `<span class="pos-detail"><strong>Depto:</strong> ${p.departamento}</span>` : ''}
+          </div>
+          <div class="pos-footer">
+            <span class="badge badge-${p.estado}">${estadoLabels[p.estado] || p.estado}</span>
+            <span class="pos-date">${fecha}${limite ? ' → ' + limite : ''}</span>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ---- MODAL ----
+    function openModal(position = null) {
+      document.getElementById('modal').classList.add('active');
+      document.getElementById('positionForm').reset();
+
+      // Poblar select de empresas
+      const sel = document.getElementById('f_empresa');
+      sel.innerHTML = '<option value="">Seleccionar empresa...</option>' +
+        allEmpresas.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+
+      if (position) {
+        document.getElementById('modalTitle').textContent = 'Editar posición';
+        document.getElementById('deleteBtn').style.display = 'inline-block';
+        document.getElementById('positionId').value = position.id;
+        document.getElementById('f_titulo').value = position.titulo || '';
+        document.getElementById('f_empresa').value = position.empresa_id || '';
+        document.getElementById('f_departamento').value = position.departamento || '';
+        document.getElementById('f_ubicacion').value = position.ubicacion || '';
+        document.getElementById('f_salario').value = position.salario_ofrecido || '';
+        document.getElementById('f_estado').value = position.estado || 'abierta';
+        document.getElementById('f_fecha_apertura').value = position.fecha_apertura || '';
+        document.getElementById('f_fecha_limite').value = position.fecha_limite || '';
+        document.getElementById('f_requisitos').value = position.requisitos || '';
+        document.getElementById('f_notas').value = position.notas || '';
+
+        // Mostrar sección de candidatos
+        document.getElementById('candidatesSection').style.display = 'block';
+        loadAssignedCandidates(position.id);
+      } else {
+        document.getElementById('modalTitle').textContent = 'Nueva posición';
+        document.getElementById('deleteBtn').style.display = 'none';
+        document.getElementById('positionId').value = '';
+        document.getElementById('candidatesSection').style.display = 'none';
+        document.getElementById('f_fecha_apertura').value = new Date().toISOString().split('T')[0];
+      }
+    }
+
+    function closeModal() { document.getElementById('modal').classList.remove('active'); }
+
+    async function editPosition(id) {
+      const p = allPositions.find(x => x.id === id);
+      if (p) openModal(p);
+    }
+
+    async function loadAssignedCandidates(posicionId) {
+      const { data } = await supabase
+        .from('candidato_posicion')
+        .select('*, candidatos(nombre)')
+        .eq('posicion_id', posicionId);
+
+      const list = document.getElementById('assignedList');
+      const estados = ['identificado', 'enviado', 'en_entrevista', 'aprobado', 'contratado', 'rechazado', 'disponible'];
+      const labels = { identificado: 'Identificado', enviado: 'Enviado', en_entrevista: 'En entrevista', aprobado: 'Aprobado', contratado: 'Contratado', rechazado: 'Rechazado', disponible: 'Disponible' };
+
+      if (!data || data.length === 0) {
+        list.innerHTML = '<p style="font-size:13px;color:#888;padding:8px 0;">No hay candidatos asignados todavía.</p>';
+      } else {
+        list.innerHTML = data.map(cp => `<div class="assigned-item">
+          <span>${cp.candidatos?.nombre || 'Sin nombre'}</span>
+          <select onchange="updateCandidateStatus('${cp.id}', this.value)">
+            ${estados.map(e => `<option value="${e}" ${cp.estado === e ? 'selected' : ''}>${labels[e]}</option>`).join('')}
+          </select>
+        </div>`).join('');
+      }
+
+      // Poblar select de candidatos disponibles
+      const assignedIds = (data || []).map(cp => cp.candidato_id);
+      const available = allCandidatos.filter(c => !assignedIds.includes(c.id));
+      const addSel = document.getElementById('addCandidateSelect');
+      addSel.innerHTML = '<option value="">Agregar candidato...</option>' +
+        available.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+    }
+
+    async function addCandidateToPosition() {
+      const candidatoId = document.getElementById('addCandidateSelect').value;
+      const posicionId = document.getElementById('positionId').value;
+      if (!candidatoId || !posicionId) return;
+
+      const { error } = await sb.from('candidato_posicion').insert({
+        candidato_id: candidatoId,
+        posicion_id: posicionId,
+        estado: 'identificado'
+      });
+
+      if (error) { alert('Error: ' + error.message); return; }
+      loadAssignedCandidates(posicionId);
+      showToast('Candidato agregado');
+    }
+
+    async function updateCandidateStatus(cpId, estado) {
+      const { error } = await sb.from('candidato_posicion').update({ estado }).eq('id', cpId);
+      if (error) alert('Error: ' + error.message);
+    }
+
+    // ---- GUARDAR ----
+    async function savePosition(e) {
+      e.preventDefault();
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+
+      const id = document.getElementById('positionId').value;
+      const data = {
+        titulo: document.getElementById('f_titulo').value.trim(),
+        empresa_id: document.getElementById('f_empresa').value || null,
+        departamento: document.getElementById('f_departamento').value.trim() || null,
+        ubicacion: document.getElementById('f_ubicacion').value.trim() || null,
+        salario_ofrecido: document.getElementById('f_salario').value || null,
+        estado: document.getElementById('f_estado').value,
+        fecha_apertura: document.getElementById('f_fecha_apertura').value || null,
+        fecha_limite: document.getElementById('f_fecha_limite').value || null,
+        requisitos: document.getElementById('f_requisitos').value.trim() || null,
+        notas: document.getElementById('f_notas').value.trim() || null,
+      };
+
+      try {
+        if (id) {
+          const { error } = await sb.from('posiciones').update(data).eq('id', id);
+          if (error) throw error;
+        } else {
+          const { error } = await sb.from('posiciones').insert(data);
+          if (error) throw error;
+        }
+
+        closeModal();
+        await loadPositions();
+        showToast(id ? 'Posición actualizada' : 'Posición creada');
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Guardar';
+    }
+
+    async function deletePosition() {
+      const id = document.getElementById('positionId').value;
+      if (!id) return;
+      if (!confirm('¿Eliminar esta posición? Se eliminarán también los candidatos asignados.')) return;
+
+      const { error } = await sb.from('posiciones').delete().eq('id', id);
+      if (error) { alert('Error: ' + error.message); return; }
+
+      closeModal();
+      await loadPositions();
+      showToast('Posición eliminada');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+    document.getElementById('modal').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeModal(); });
+  </script>
+</body>
+</html>

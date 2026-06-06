@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Candidatos — We Recruit DR</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f7fa;
+      color: #1a1a1a;
+    }
+
+    /* NAV LATERAL */
+    .sidebar {
+      position: fixed;
+      left: 0; top: 0;
+      width: 220px;
+      height: 100vh;
+      background: #063958;
+      padding: 24px 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-logo {
+      color: #CEE4CC;
+      font-size: 18px;
+      font-weight: 700;
+      padding: 0 20px;
+      margin-bottom: 32px;
+    }
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 20px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.15s;
+    }
+    .sidebar a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .sidebar a.active { background: rgba(255,255,255,0.12); color: #CEE4CC; font-weight: 600; }
+    .sidebar-bottom {
+      margin-top: auto;
+      padding: 0 20px;
+    }
+    .sidebar-bottom button {
+      width: 100%;
+      padding: 10px;
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.7);
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .sidebar-bottom button:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+    /* CONTENIDO */
+    .main { margin-left: 220px; padding: 32px; }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .page-header h1 { font-size: 24px; color: #063958; }
+
+    /* CONTROLES */
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 14px;
+      border: 1.5px solid #dde5ed;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+    .search-input:focus { border-color: #0F6B9F; }
+    .filter-select {
+      padding: 10px 14px;
+      border: 1.5px solid #dde5ed;
+      border-radius: 8px;
+      font-size: 14px;
+      background: #fff;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* BOTONES */
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-primary { background: #0F6B9F; color: #fff; }
+    .btn-primary:hover { background: #063958; }
+    .btn-secondary { background: #e8ecf1; color: #063958; }
+    .btn-secondary:hover { background: #dde5ed; }
+    .btn-danger { background: #fef2f2; color: #b91c1c; }
+    .btn-danger:hover { background: #fde8e8; }
+    .btn-sm { padding: 6px 14px; font-size: 13px; }
+
+    /* TABLA */
+    .table-container {
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: #f8f9fb;
+      border-bottom: 1px solid #eee;
+    }
+    td {
+      padding: 12px 16px;
+      font-size: 14px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    tr:hover { background: #f8f9fb; }
+    tr:last-child td { border-bottom: none; }
+
+    .candidate-name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #CEE4CC;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: #063958;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .stars { color: #f59e0b; font-size: 14px; letter-spacing: 1px; }
+    .stars .empty { color: #ddd; }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-disc { background: #ede9fe; color: #6d28d9; }
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #888;
+    }
+    .empty-state p { margin-top: 8px; font-size: 14px; }
+    .link { color: #0F6B9F; text-decoration: none; cursor: pointer; }
+    .link:hover { text-decoration: underline; }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      padding: 32px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal h2 {
+      font-size: 20px;
+      color: #063958;
+      margin-bottom: 24px;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #063958;
+      margin-bottom: 5px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid #dde5ed;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: #0F6B9F; }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+    .form-full { grid-column: 1 / -1; }
+
+    /* EVALUACIÓN */
+    .eval-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      background: #f8f9fb;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .eval-item label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+      display: block;
+    }
+    .eval-item select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #dde5ed;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .star-input { cursor: pointer; font-size: 22px; }
+    .star-input span { color: #ddd; transition: color 0.1s; }
+    .star-input span.active { color: #f59e0b; }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 20px;
+      background: #063958;
+      color: #fff;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 200;
+      display: none;
+    }
+    .toast.show { display: block; }
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo">We Recruit DR</div>
+    <a href="index.html">📊 Dashboard</a>
+    <a href="candidatos.html" class="active">👤 Candidatos</a>
+    <a href="posiciones.html">💼 Posiciones</a>
+    <a href="empresas.html">🏢 Empresas</a>
+    <div class="sidebar-bottom">
+      <button onclick="logout()">Cerrar sesión</button>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="page-header">
+      <h1>Candidatos</h1>
+      <button class="btn btn-primary" onclick="openModal()">+ Nuevo candidato</button>
+    </div>
+
+    <div class="controls">
+      <input type="text" class="search-input" id="searchInput" placeholder="Buscar por nombre, email o carrera..." oninput="filterCandidates()">
+      <select class="filter-select" id="filterStars" onchange="filterCandidates()">
+        <option value="">Todas las puntuaciones</option>
+        <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+        <option value="4">⭐⭐⭐⭐ (4+)</option>
+        <option value="3">⭐⭐⭐ (3+)</option>
+      </select>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Candidato</th>
+            <th>Carrera</th>
+            <th>Salario esperado</th>
+            <th>Puntuación</th>
+            <th>DISC</th>
+            <th>Fecha</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+      </table>
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <p style="font-size:32px;">👤</p>
+        <p>No hay candidatos todavía. Agrega tu primer candidato.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Crear/Editar candidato -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <h2 id="modalTitle">Nuevo candidato</h2>
+      <form id="candidateForm" onsubmit="saveCandidate(event)">
+        <input type="hidden" id="candidateId">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre completo *</label>
+            <input type="text" id="f_nombre" required>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="f_email">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input type="text" id="f_telefono">
+          </div>
+          <div class="form-group">
+            <label>Carrera</label>
+            <input type="text" id="f_carrera">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Salario esperado (RD$)</label>
+            <input type="number" id="f_salario" min="0" step="1000">
+          </div>
+          <div class="form-group">
+            <label>Resultado DISC</label>
+            <input type="text" id="f_disc" placeholder="Ej: D alto, I medio">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Puntuación general</label>
+          <div class="star-input" id="starInput">
+            <span data-v="1" onclick="setStars(1)">★</span>
+            <span data-v="2" onclick="setStars(2)">★</span>
+            <span data-v="3" onclick="setStars(3)">★</span>
+            <span data-v="4" onclick="setStars(4)">★</span>
+            <span data-v="5" onclick="setStars(5)">★</span>
+          </div>
+          <input type="hidden" id="f_estrellas">
+        </div>
+
+        <div class="form-group">
+          <label>Foto del candidato</label>
+          <input type="file" id="f_foto" accept="image/*">
+        </div>
+
+        <div class="form-group">
+          <label>CV (PDF)</label>
+          <input type="file" id="f_cv" accept=".pdf,.doc,.docx">
+        </div>
+
+        <h3 style="font-size:15px; color:#063958; margin:20px 0 12px;">Evaluación por criterios</h3>
+        <div class="eval-grid">
+          <div class="eval-item">
+            <label>Experiencia</label>
+            <select id="f_experiencia"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+          </div>
+          <div class="eval-item">
+            <label>Actitud</label>
+            <select id="f_actitud"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+          </div>
+          <div class="eval-item">
+            <label>Presentación</label>
+            <select id="f_presentacion"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+          </div>
+          <div class="eval-item">
+            <label>Referencias</label>
+            <select id="f_referencias"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+          </div>
+          <div class="eval-item">
+            <label>Comunicación</label>
+            <select id="f_comunicacion"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Notas</label>
+          <textarea id="f_notas" placeholder="Notas internas sobre el candidato..."></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="deleteBtn" style="display:none;" onclick="deleteCandidate()">Eliminar</button>
+          <button type="submit" class="btn btn-primary" id="saveBtn">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://bohkpbkktcnwsglvcrax.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvaGtwYmtrdGNud3NnbHZjcmF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NjY0MjYsImV4cCI6MjA5NjM0MjQyNn0.yW7atZCGHqipQ-KE-UH5J3DPlXvud5lzf5LMs3J9YzA';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let allCandidates = [];
+    let currentStars = 0;
+
+    // Auth check
+    sb.auth.getSession().then(({ data: { session } }) => {
+      if (!session) window.location.href = 'login.html';
+      else loadCandidates();
+    });
+
+    async function logout() {
+      await sb.auth.signOut();
+      window.location.href = 'login.html';
+    }
+
+    // ---- CARGAR CANDIDATOS ----
+    async function loadCandidates() {
+      const { data, error } = await supabase
+        .from('candidatos')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) { console.error(error); return; }
+      allCandidates = data || [];
+      renderTable(allCandidates);
+    }
+
+    function filterCandidates() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const minStars = parseInt(document.getElementById('filterStars').value) || 0;
+      const filtered = allCandidates.filter(c => {
+        const matchText = !q ||
+          (c.nombre || '').toLowerCase().includes(q) ||
+          (c.email || '').toLowerCase().includes(q) ||
+          (c.carrera || '').toLowerCase().includes(q);
+        const matchStars = !minStars || (c.puntuacion_estrellas || 0) >= minStars;
+        return matchText && matchStars;
+      });
+      renderTable(filtered);
+    }
+
+    function renderTable(candidates) {
+      const tbody = document.getElementById('tableBody');
+      const empty = document.getElementById('emptyState');
+
+      if (candidates.length === 0) {
+        tbody.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+
+      tbody.innerHTML = candidates.map(c => {
+        const initials = (c.nombre || '??').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        const avatarContent = c.foto_url
+          ? `<img src="${c.foto_url}" alt="">`
+          : initials;
+        const stars = renderStars(c.puntuacion_estrellas);
+        const salario = c.salario_esperado ? `RD$ ${Number(c.salario_esperado).toLocaleString()}` : '—';
+        const fecha = c.created_at ? new Date(c.created_at).toLocaleDateString('es-DO') : '';
+        const disc = c.resultado_disc ? `<span class="badge badge-disc">${c.resultado_disc}</span>` : '—';
+
+        return `<tr>
+          <td>
+            <div class="candidate-name">
+              <div class="avatar">${avatarContent}</div>
+              <div>
+                <a class="link" onclick="editCandidate('${c.id}')">${c.nombre}</a>
+                <div style="font-size:12px;color:#888;">${c.email || ''}</div>
+              </div>
+            </div>
+          </td>
+          <td>${c.carrera || '—'}</td>
+          <td>${salario}</td>
+          <td><span class="stars">${stars}</span></td>
+          <td>${disc}</td>
+          <td style="font-size:13px;color:#888;">${fecha}</td>
+          <td><a class="link" onclick="editCandidate('${c.id}')">Editar</a></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function renderStars(n) {
+      if (!n) return '<span class="empty">☆☆☆☆☆</span>';
+      let s = '';
+      for (let i = 1; i <= 5; i++) s += i <= n ? '★' : '<span class="empty">☆</span>';
+      return s;
+    }
+
+    // ---- MODAL ----
+    function openModal(candidate = null) {
+      document.getElementById('modal').classList.add('active');
+      document.getElementById('candidateForm').reset();
+      currentStars = 0;
+      updateStarDisplay();
+
+      if (candidate) {
+        document.getElementById('modalTitle').textContent = 'Editar candidato';
+        document.getElementById('deleteBtn').style.display = 'inline-block';
+        document.getElementById('candidateId').value = candidate.id;
+        document.getElementById('f_nombre').value = candidate.nombre || '';
+        document.getElementById('f_email').value = candidate.email || '';
+        document.getElementById('f_telefono').value = candidate.telefono || '';
+        document.getElementById('f_carrera').value = candidate.carrera || '';
+        document.getElementById('f_salario').value = candidate.salario_esperado || '';
+        document.getElementById('f_disc').value = candidate.resultado_disc || '';
+        document.getElementById('f_notas').value = candidate.notas || '';
+        if (candidate.puntuacion_estrellas) {
+          currentStars = candidate.puntuacion_estrellas;
+          document.getElementById('f_estrellas').value = currentStars;
+          updateStarDisplay();
+        }
+        // Cargar evaluación
+        loadEvaluation(candidate.id);
+      } else {
+        document.getElementById('modalTitle').textContent = 'Nuevo candidato';
+        document.getElementById('deleteBtn').style.display = 'none';
+        document.getElementById('candidateId').value = '';
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+    }
+
+    async function loadEvaluation(candidatoId) {
+      const { data } = await supabase
+        .from('evaluaciones_candidato')
+        .select('*')
+        .eq('candidato_id', candidatoId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (data && data[0]) {
+        const e = data[0];
+        document.getElementById('f_experiencia').value = e.experiencia || '';
+        document.getElementById('f_actitud').value = e.actitud || '';
+        document.getElementById('f_presentacion').value = e.presentacion || '';
+        document.getElementById('f_referencias').value = e.referencias || '';
+        document.getElementById('f_comunicacion').value = e.comunicacion || '';
+      }
+    }
+
+    function setStars(n) {
+      currentStars = n;
+      document.getElementById('f_estrellas').value = n;
+      updateStarDisplay();
+    }
+
+    function updateStarDisplay() {
+      document.querySelectorAll('#starInput span').forEach(s => {
+        s.classList.toggle('active', parseInt(s.dataset.v) <= currentStars);
+      });
+    }
+
+    async function editCandidate(id) {
+      const c = allCandidates.find(x => x.id === id);
+      if (c) openModal(c);
+    }
+
+    // ---- GUARDAR ----
+    async function saveCandidate(e) {
+      e.preventDefault();
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+
+      const id = document.getElementById('candidateId').value;
+      const candidateData = {
+        nombre: document.getElementById('f_nombre').value.trim(),
+        email: document.getElementById('f_email').value.trim() || null,
+        telefono: document.getElementById('f_telefono').value.trim() || null,
+        carrera: document.getElementById('f_carrera').value.trim() || null,
+        salario_esperado: document.getElementById('f_salario').value || null,
+        resultado_disc: document.getElementById('f_disc').value.trim() || null,
+        puntuacion_estrellas: currentStars || null,
+        notas: document.getElementById('f_notas').value.trim() || null,
+      };
+
+      try {
+        let candidateId = id;
+
+        // Subir foto si hay
+        const fotoFile = document.getElementById('f_foto').files[0];
+        if (fotoFile) {
+          const ext = fotoFile.name.split('.').pop();
+          const path = `fotos/${Date.now()}.${ext}`;
+          const { error: upErr } = await sb.storage.from('archivos').upload(path, fotoFile);
+          if (!upErr) {
+            const { data: urlData } = sb.storage.from('archivos').getPublicUrl(path);
+            candidateData.foto_url = urlData.publicUrl;
+          }
+        }
+
+        // Subir CV si hay
+        const cvFile = document.getElementById('f_cv').files[0];
+        if (cvFile) {
+          const ext = cvFile.name.split('.').pop();
+          const path = `cvs/${Date.now()}.${ext}`;
+          const { error: upErr } = await sb.storage.from('archivos').upload(path, cvFile);
+          if (!upErr) {
+            const { data: urlData } = sb.storage.from('archivos').getPublicUrl(path);
+            candidateData.cv_url = urlData.publicUrl;
+          }
+        }
+
+        if (id) {
+          const { error } = await sb.from('candidatos').update(candidateData).eq('id', id);
+          if (error) throw error;
+        } else {
+          const { data, error } = await sb.from('candidatos').insert(candidateData).select();
+          if (error) throw error;
+          candidateId = data[0].id;
+        }
+
+        // Guardar evaluación
+        const evalData = {
+          candidato_id: candidateId,
+          experiencia: document.getElementById('f_experiencia').value || null,
+          actitud: document.getElementById('f_actitud').value || null,
+          presentacion: document.getElementById('f_presentacion').value || null,
+          referencias: document.getElementById('f_referencias').value || null,
+          comunicacion: document.getElementById('f_comunicacion').value || null,
+        };
+
+        const hasEval = Object.values(evalData).some((v, i) => i > 0 && v);
+        if (hasEval) {
+          // Borrar evaluación anterior si existe
+          await sb.from('evaluaciones_candidato').delete().eq('candidato_id', candidateId);
+          await sb.from('evaluaciones_candidato').insert(evalData);
+        }
+
+        closeModal();
+        await loadCandidates();
+        showToast(id ? 'Candidato actualizado' : 'Candidato creado');
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Guardar';
+    }
+
+    async function deleteCandidate() {
+      const id = document.getElementById('candidateId').value;
+      if (!id) return;
+      if (!confirm('¿Eliminar este candidato? Esta acción no se puede deshacer.')) return;
+
+      const { error } = await sb.from('candidatos').delete().eq('id', id);
+      if (error) { alert('Error: ' + error.message); return; }
+
+      closeModal();
+      await loadCandidates();
+      showToast('Candidato eliminado');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // Cerrar modal con Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+    document.getElementById('modal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeModal();
+    });
+  </script>
+</body>
+</html>
