@@ -298,7 +298,7 @@
     }
 
     async function loadPositions() {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from('posiciones')
         .select('*, empresas(nombre)')
         .order('created_at', { ascending: false });
@@ -401,7 +401,7 @@
     }
 
     async function loadAssignedCandidates(posicionId) {
-      const { data } = await supabase
+      const { data } = await sb
         .from('candidato_posicion')
         .select('*, candidatos(nombre)')
         .eq('posicion_id', posicionId);
