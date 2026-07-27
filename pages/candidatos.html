@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Candidatos — We Recruit DR</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -476,9 +476,14 @@
     let currentStars = 0;
 
     // Auth check
-    sb.auth.getSession().then(({ data: { session } }) => {
-      if (!session) window.location.href = 'login.html';
-      else loadCandidates();
+    let initialized = false;
+    sb.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        window.location.href = 'login.html';
+      } else if (!initialized) {
+        initialized = true;
+        loadCandidates();
+      }
     });
 
     async function logout() {

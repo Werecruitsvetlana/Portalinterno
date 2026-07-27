@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Posiciones — We Recruit DR</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -300,9 +300,14 @@
     let allEmpresas = [];
     let allCandidatos = [];
 
-    sb.auth.getSession().then(({ data: { session } }) => {
-      if (!session) window.location.href = 'login.html';
-      else init();
+    let initialized = false;
+    sb.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        window.location.href = 'login.html';
+      } else if (!initialized) {
+        initialized = true;
+        init();
+      }
     });
 
     async function logout() {
@@ -326,14 +331,19 @@
     }
 
     async function loadPositions() {
-      const { data, error } = await sb
-        .from('posiciones')
-        .select('*, empresas(nombre)')
-        .order('created_at', { ascending: false });
+      try {
+        const { data, error } = await sb
+          .from('posiciones')
+          .select('*, empresas(nombre)')
+          .order('created_at', { ascending: false });
 
-      if (error) { console.error(error); return; }
-      allPositions = data || [];
-      renderPositions(allPositions);
+        if (error) throw error;
+        allPositions = data || [];
+        renderPositions(allPositions);
+      } catch (err) {
+        console.error('Error cargando posiciones:', err);
+        document.getElementById('emptyState').style.display = 'block';
+      }
     }
 
     function filterPositions() {
