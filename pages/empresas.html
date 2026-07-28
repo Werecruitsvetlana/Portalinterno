@@ -96,6 +96,52 @@
       background: #063958; color: #fff; border-radius: 8px; font-size: 14px; z-index: 200; display: none;
     }
     .toast.show { display: block; }
+
+    /* DASHBOARD */
+    .dash-back { background: none; border: none; color: #0F6B9F; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 16px; padding: 0; }
+    .dash-back:hover { text-decoration: underline; }
+    .dash-header {
+      background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: flex-start;
+    }
+    .dash-header h2 { font-size: 22px; color: #063958; margin-bottom: 6px; }
+    .dash-header-meta { font-size: 13px; color: #666; display: flex; flex-wrap: wrap; gap: 4px 18px; margin-top: 8px; }
+    .dash-edit-btn { background: #e8ecf1; color: #063958; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .dash-edit-btn:hover { background: #dde5ed; }
+
+    .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .kpi-card { background: #fff; border-radius: 10px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border-left: 4px solid #0F6B9F; }
+    .kpi-card .kpi-value { font-size: 22px; font-weight: 700; color: #063958; }
+    .kpi-card .kpi-label { font-size: 12px; color: #888; margin-top: 4px; }
+
+    .dash-section { background: #fff; border-radius: 12px; padding: 22px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .dash-section h3 { font-size: 16px; color: #063958; margin-bottom: 14px; }
+    .dash-table { width: 100%; border-collapse: collapse; }
+    .dash-table th { text-align: left; font-size: 11px; text-transform: uppercase; color: #888; padding: 8px 10px; border-bottom: 1.5px solid #f0f0f0; }
+    .dash-table td { padding: 10px; font-size: 13px; border-bottom: 1px solid #f5f5f5; color: #333; }
+    .dash-table tr:last-child td { border-bottom: none; }
+    .dash-empty { color: #999; font-size: 13px; padding: 10px; }
+
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: capitalize; }
+    .badge-abierta { background: #dbeafe; color: #1d4ed8; }
+    .badge-en_proceso { background: #fef3c7; color: #92400e; }
+    .badge-cubierta { background: #dcfce7; color: #166534; }
+    .badge-cancelada { background: #fef2f2; color: #b91c1c; }
+
+    .badge-identificado { background: #f3f4f6; color: #374151; }
+    .badge-enviado { background: #dbeafe; color: #1d4ed8; }
+    .badge-en_entrevista { background: #fef3c7; color: #92400e; }
+    .badge-aprobado { background: #e0e7ff; color: #4338ca; }
+    .badge-contratado { background: #dcfce7; color: #166534; }
+    .badge-rechazado { background: #fef2f2; color: #b91c1c; }
+    .badge-disponible { background: #f3f4f6; color: #374151; }
+
+    .badge-enviada { background: #dbeafe; color: #1d4ed8; }
+    .badge-pendiente { background: #fef3c7; color: #92400e; }
+    .badge-cobrada { background: #dcfce7; color: #166534; }
+    .badge-vencida { background: #fef2f2; color: #b91c1c; }
+
+    .aging { font-size: 12px; font-weight: 600; color: #b91c1c; }
   </style>
 </head>
 <body>
@@ -104,6 +150,7 @@
     <a href="index.html">📊 Dashboard</a>
     <a href="candidatos.html">👤 Candidatos</a>
     <a href="posiciones.html">💼 Posiciones</a>
+    <a href="ternas.html">📋 Ternas</a>
     <a href="empresas.html" class="active">🏢 Empresas</a>
     <div class="sidebar-bottom">
       <button onclick="logout()">Cerrar sesión</button>
@@ -111,19 +158,50 @@
   </nav>
 
   <div class="main">
-    <div class="page-header">
-      <h1>Empresas-Cliente</h1>
-      <button class="btn btn-primary" onclick="openModal()">+ Nueva empresa</button>
+    <div id="listView">
+      <div class="page-header">
+        <h1>Empresas-Cliente</h1>
+        <button class="btn btn-primary" onclick="openModal()">+ Nueva empresa</button>
+      </div>
+
+      <div class="controls">
+        <input type="text" class="search-input" id="searchInput" placeholder="Buscar por nombre o industria..." oninput="filterEmpresas()">
+      </div>
+
+      <div class="empresas-grid" id="empresasGrid"></div>
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <p style="font-size:32px;">🏢</p>
+        <p>No hay empresas registradas. Agrega tu primera empresa-cliente.</p>
+      </div>
     </div>
 
-    <div class="controls">
-      <input type="text" class="search-input" id="searchInput" placeholder="Buscar por nombre o industria..." oninput="filterEmpresas()">
-    </div>
+    <div id="dashboardView" style="display:none;">
+      <button class="dash-back" onclick="closeDashboard()">← Volver a empresas</button>
 
-    <div class="empresas-grid" id="empresasGrid"></div>
-    <div class="empty-state" id="emptyState" style="display:none;">
-      <p style="font-size:32px;">🏢</p>
-      <p>No hay empresas registradas. Agrega tu primera empresa-cliente.</p>
+      <div class="dash-header">
+        <div>
+          <h2 id="dashNombre"></h2>
+          <div class="dash-header-meta" id="dashMeta"></div>
+        </div>
+        <button class="dash-edit-btn" id="dashEditBtn">✎ Editar empresa</button>
+      </div>
+
+      <div class="kpi-row" id="dashKpis"></div>
+
+      <div class="dash-section">
+        <h3>Posiciones</h3>
+        <div id="dashPosicionesWrap"></div>
+      </div>
+
+      <div class="dash-section">
+        <h3>Candidatos enviados</h3>
+        <div id="dashCandidatosWrap"></div>
+      </div>
+
+      <div class="dash-section">
+        <h3>Facturas</h3>
+        <div id="dashFacturasWrap"></div>
+      </div>
     </div>
   </div>
 
@@ -239,7 +317,7 @@
       }
       empty.style.display = 'none';
 
-      grid.innerHTML = empresas.map(e => `<div class="empresa-card" onclick="editEmpresa('${e.id}')">
+      grid.innerHTML = empresas.map(e => `<div class="empresa-card" onclick="openDashboard('${e.id}')">
         <div class="empresa-name">${e.nombre}</div>
         ${e.contacto_nombre ? `<div class="empresa-detail">👤 ${e.contacto_nombre}</div>` : ''}
         ${e.industria ? `<div class="empresa-detail">🏭 ${e.industria}</div>` : ''}
@@ -337,6 +415,150 @@
       t.textContent = msg;
       t.classList.add('show');
       setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ===== DASHBOARD POR EMPRESA =====
+    const estadoPosLabels = { abierta: 'Abierta', en_proceso: 'En proceso', cubierta: 'Cubierta', cancelada: 'Cancelada' };
+    const estadoCandLabels = { identificado: 'Identificado', enviado: 'Enviado', en_entrevista: 'En entrevista', aprobado: 'Aprobado', contratado: 'Contratado', rechazado: 'Rechazado', disponible: 'Disponible' };
+    const estadoFacLabels = { enviada: 'Enviada', pendiente: 'Pendiente', cobrada: 'Cobrada', vencida: 'Vencida' };
+
+    function fmtMoney(n) {
+      return 'RD$ ' + Number(n || 0).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function fmtDate(d) {
+      return d ? new Date(d + 'T00:00:00').toLocaleDateString('es-DO') : '—';
+    }
+
+    async function openDashboard(id) {
+      const empresa = allEmpresas.find(x => x.id === id);
+      if (!empresa) return;
+
+      document.getElementById('listView').style.display = 'none';
+      document.getElementById('dashboardView').style.display = 'block';
+
+      document.getElementById('dashNombre').textContent = empresa.nombre;
+      const metaParts = [];
+      if (empresa.industria) metaParts.push(`🏭 ${empresa.industria}`);
+      if (empresa.contacto_nombre) metaParts.push(`👤 ${empresa.contacto_nombre}`);
+      if (empresa.contacto_email) metaParts.push(`✉️ ${empresa.contacto_email}`);
+      if (empresa.contacto_telefono) metaParts.push(`📞 ${empresa.contacto_telefono}`);
+      document.getElementById('dashMeta').innerHTML = metaParts.map(p => `<span>${p}</span>`).join('');
+      document.getElementById('dashEditBtn').onclick = () => openModal(empresa);
+
+      // Posiciones
+      const { data: posiciones } = await sb.from('posiciones').select('*').eq('empresa_id', id).order('fecha_apertura', { ascending: false });
+      const poss = posiciones || [];
+
+      // Candidatos enviados (via candidato_posicion -> posiciones de esta empresa)
+      let candRows = [];
+      if (poss.length) {
+        const posIds = poss.map(p => p.id);
+        const { data: cps } = await sb.from('candidato_posicion')
+          .select('*, candidatos(nombre, apellido), posiciones(titulo)')
+          .in('posicion_id', posIds);
+        candRows = cps || [];
+      }
+
+      // Facturas
+      const { data: facturas } = await sb.from('facturas').select('*').eq('empresa_id', id).order('fecha_emision', { ascending: false });
+      const facs = facturas || [];
+
+      renderDashKpis(poss, candRows, facs);
+      renderDashPosiciones(poss);
+      renderDashCandidatos(candRows);
+      renderDashFacturas(facs);
+    }
+
+    function closeDashboard() {
+      document.getElementById('dashboardView').style.display = 'none';
+      document.getElementById('listView').style.display = 'block';
+    }
+
+    function renderDashKpis(poss, candRows, facs) {
+      const totalPos = poss.length;
+      const abiertas = poss.filter(p => p.estado === 'abierta').length;
+      const totalCand = candRows.length;
+      const totalFacturado = facs.reduce((sum, f) => sum + Number(f.monto || 0), 0);
+      const totalPendiente = facs.filter(f => f.estado === 'pendiente' || f.estado === 'enviada' || f.estado === 'vencida')
+        .reduce((sum, f) => sum + Number(f.monto || 0), 0);
+
+      const kpis = [
+        { label: 'Posiciones totales', value: totalPos },
+        { label: 'Posiciones abiertas', value: abiertas },
+        { label: 'Candidatos enviados', value: totalCand },
+        { label: 'Total facturado', value: fmtMoney(totalFacturado) },
+        { label: 'Pendiente de cobro', value: fmtMoney(totalPendiente) },
+      ];
+      document.getElementById('dashKpis').innerHTML = kpis.map(k =>
+        `<div class="kpi-card"><div class="kpi-value">${k.value}</div><div class="kpi-label">${k.label}</div></div>`
+      ).join('');
+    }
+
+    function renderDashPosiciones(poss) {
+      const wrap = document.getElementById('dashPosicionesWrap');
+      if (!poss.length) {
+        wrap.innerHTML = '<div class="dash-empty">No hay posiciones registradas para esta empresa.</div>';
+        return;
+      }
+      wrap.innerHTML = `<table class="dash-table">
+        <thead><tr><th>Título</th><th>Estado</th><th>Salario</th><th>Fecha apertura</th></tr></thead>
+        <tbody>${poss.map(p => `<tr>
+          <td>${p.titulo || '—'}</td>
+          <td><span class="badge badge-${p.estado}">${estadoPosLabels[p.estado] || p.estado || '—'}</span></td>
+          <td>${p.salario_ofrecido ? fmtMoney(p.salario_ofrecido) : 'No definido'}</td>
+          <td>${fmtDate(p.fecha_apertura)}</td>
+        </tr>`).join('')}</tbody>
+      </table>`;
+    }
+
+    function renderDashCandidatos(candRows) {
+      const wrap = document.getElementById('dashCandidatosWrap');
+      if (!candRows.length) {
+        wrap.innerHTML = '<div class="dash-empty">No hay candidatos enviados a esta empresa.</div>';
+        return;
+      }
+      wrap.innerHTML = `<table class="dash-table">
+        <thead><tr><th>Candidato</th><th>Posición</th><th>Estado</th></tr></thead>
+        <tbody>${candRows.map(cp => {
+          const cand = cp.candidatos;
+          const nombreCompleto = cand ? [cand.nombre, cand.apellido].filter(Boolean).join(' ') : '—';
+          const posTitulo = cp.posiciones ? cp.posiciones.titulo : '—';
+          return `<tr>
+            <td>${nombreCompleto}</td>
+            <td>${posTitulo}</td>
+            <td><span class="badge badge-${cp.estado}">${estadoCandLabels[cp.estado] || cp.estado || '—'}</span></td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>`;
+    }
+
+    function renderDashFacturas(facs) {
+      const wrap = document.getElementById('dashFacturasWrap');
+      if (!facs.length) {
+        wrap.innerHTML = '<div class="dash-empty">No hay facturas registradas para esta empresa.</div>';
+        return;
+      }
+      const today = new Date();
+      wrap.innerHTML = `<table class="dash-table">
+        <thead><tr><th>Número</th><th>Monto</th><th>Estado</th><th>Emisión</th><th>Vencimiento</th><th>Aging</th></tr></thead>
+        <tbody>${facs.map(f => {
+          let aging = '—';
+          if ((f.estado === 'pendiente' || f.estado === 'enviada' || f.estado === 'vencida') && f.fecha_vencimiento) {
+            const venc = new Date(f.fecha_vencimiento + 'T00:00:00');
+            const diffDays = Math.floor((today - venc) / (1000 * 60 * 60 * 24));
+            if (diffDays > 0) aging = `<span class="aging">${diffDays} días vencida</span>`;
+            else aging = `${Math.abs(diffDays)} días restantes`;
+          }
+          return `<tr>
+            <td>${f.numero || '—'}</td>
+            <td>${fmtMoney(f.monto)}</td>
+            <td><span class="badge badge-${f.estado}">${estadoFacLabels[f.estado] || f.estado || '—'}</span></td>
+            <td>${fmtDate(f.fecha_emision)}</td>
+            <td>${fmtDate(f.fecha_vencimiento)}</td>
+            <td>${aging}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>`;
     }
 
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });

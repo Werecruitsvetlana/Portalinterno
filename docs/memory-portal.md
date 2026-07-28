@@ -98,7 +98,10 @@ referencias/   ← Archivos de referencia
 - ✅ `pages/candidatos.html` — CRUD con foto, CV, evaluación por criterios, estrellas
 - ✅ `pages/posiciones.html` — CRUD con estados, vinculación a empresas, asignación de candidatos
 - ✅ `pages/empresas.html` — CRUD con stats de posiciones
-- ⏳ Pendiente: desplegar en Vercel y probar en vivo
+- ✅ Desplegado en Vercel (`portal-werecruitdr.vercel.app`)
+- ✅ Vercel CLI instalado y conectado (`vercel --prod` para desplegar)
+- ✅ GitHub repo: `Werecruitsvetlana/Portalinterno` (rama `master`)
+- ⚠️ Bug pendiente: posiciones no cargan por caché del navegador (Ctrl+Shift+R para forzar)
 
 ### Fase 2 — Pendiente
 - Ternas con generación de PDF
@@ -119,10 +122,9 @@ referencias/   ← Archivos de referencia
 
 ## Próximos pasos
 
-1. Desplegar en Vercel y probar login + CRUD
-2. Crear cuenta de usuario (Svetlana) en el portal
-3. Cargar datos iniciales (empresas, candidatos)
-4. Construir Fase 2: Ternas con PDF
+1. Verificar que posiciones carga bien tras hard refresh (Ctrl+Shift+R)
+2. Construir Fase 2: Ternas con PDF + Dashboard por empresa
+3. Fase 3: Cotizaciones, Facturación, Reportes
 
 ---
 
@@ -133,6 +135,9 @@ Creadas las 5 páginas HTML de Fase 1 + migración SQL ejecutada en Supabase. Se
 
 ### 2026-06-06 — Discovery del portal interno completado
 Entrevista guiada completada. Definidos: 9 módulos, 10 tablas en DB, flujos de estado para candidatos/posiciones/cotizaciones/facturas, generación de PDFs (terna, cotización, factura), métricas y reportes. Decisiones clave: un solo tipo de servicio, terna de 3, portal genera PDFs, evaluación por 5 criterios + promedio, herramienta psicométrica propia en fase 4 (cuestionario que llena el candidato por link). Sin notas de crédito ni descuentos. Solo RD$.
+
+### 2026-07-27 — Infraestructura conectada
+GitHub CLI + Vercel CLI instalados. Repo conectado, deploy automático con `vercel --prod`. Usuarios Supabase creados: Felix Rosa (frosa@accountone.do), Daniel Jaar (talent@werecruitdr.com). Bug de posiciones diagnosticado: la consulta a Supabase funciona (probado vía JS), el problema era caché del navegador sirviendo versión vieja con `supabase.from` en vez de `sb.from`.
 
 ### 2026-06-05 — Proyecto creado
 Se revisó el portal público y se documentó su estado actual. Proyecto designado como el más importante de We Recruit.
