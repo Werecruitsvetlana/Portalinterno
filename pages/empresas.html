@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Empresas — We Recruit DR</title>
+  <title>Empresas â€” We Recruit DR</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -147,13 +147,13 @@
 <body>
   <nav class="sidebar">
     <div class="sidebar-logo">We Recruit DR</div>
-    <a href="index.html">📊 Dashboard</a>
-    <a href="candidatos.html">👤 Candidatos</a>
-    <a href="posiciones.html">💼 Posiciones</a>
-    <a href="ternas.html">📋 Ternas</a>
-    <a href="empresas.html" class="active">🏢 Empresas</a>
+    <a href="index.html">ðŸ“Š Dashboard</a>
+    <a href="candidatos.html">ðŸ‘¤ Candidatos</a>
+    <a href="posiciones.html">ðŸ’¼ Posiciones</a>
+    <a href="ternas.html">ðŸ“‹ Ternas</a>
+    <a href="empresas.html" class="active">ðŸ¢ Empresas</a>
     <div class="sidebar-bottom">
-      <button onclick="logout()">Cerrar sesión</button>
+      <button onclick="logout()">Cerrar sesiÃ³n</button>
     </div>
   </nav>
 
@@ -170,20 +170,20 @@
 
       <div class="empresas-grid" id="empresasGrid"></div>
       <div class="empty-state" id="emptyState" style="display:none;">
-        <p style="font-size:32px;">🏢</p>
+        <p style="font-size:32px;">ðŸ¢</p>
         <p>No hay empresas registradas. Agrega tu primera empresa-cliente.</p>
       </div>
     </div>
 
     <div id="dashboardView" style="display:none;">
-      <button class="dash-back" onclick="closeDashboard()">← Volver a empresas</button>
+      <button class="dash-back" onclick="closeDashboard()">â† Volver a empresas</button>
 
       <div class="dash-header">
         <div>
           <h2 id="dashNombre"></h2>
           <div class="dash-header-meta" id="dashMeta"></div>
         </div>
-        <button class="dash-edit-btn" id="dashEditBtn">✎ Editar empresa</button>
+        <button class="dash-edit-btn" id="dashEditBtn">âœŽ Editar empresa</button>
       </div>
 
       <div class="kpi-row" id="dashKpis"></div>
@@ -227,7 +227,7 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Teléfono</label>
+            <label>TelÃ©fono</label>
             <input type="text" id="f_telefono">
           </div>
           <div class="form-group">
@@ -241,7 +241,7 @@
             <input type="text" id="f_rnc">
           </div>
           <div class="form-group">
-            <label>Dirección</label>
+            <label>DirecciÃ³n</label>
             <input type="text" id="f_direccion">
           </div>
         </div>
@@ -319,10 +319,10 @@
 
       grid.innerHTML = empresas.map(e => `<div class="empresa-card" onclick="openDashboard('${e.id}')">
         <div class="empresa-name">${e.nombre}</div>
-        ${e.contacto_nombre ? `<div class="empresa-detail">👤 ${e.contacto_nombre}</div>` : ''}
-        ${e.industria ? `<div class="empresa-detail">🏭 ${e.industria}</div>` : ''}
-        ${e.contacto_email ? `<div class="empresa-detail">✉️ ${e.contacto_email}</div>` : ''}
-        ${e.contacto_telefono ? `<div class="empresa-detail">📞 ${e.contacto_telefono}</div>` : ''}
+        ${e.contacto_nombre ? `<div class="empresa-detail">ðŸ‘¤ ${e.contacto_nombre}</div>` : ''}
+        ${e.industria ? `<div class="empresa-detail">ðŸ­ ${e.industria}</div>` : ''}
+        ${e.contacto_email ? `<div class="empresa-detail">âœ‰ï¸ ${e.contacto_email}</div>` : ''}
+        ${e.contacto_telefono ? `<div class="empresa-detail">ðŸ“ž ${e.contacto_telefono}</div>` : ''}
         <div class="empresa-stats">
           <div class="empresa-stat"><strong>${e._totalPos}</strong>posiciones total</div>
           <div class="empresa-stat"><strong>${e._abiertasPos}</strong>abiertas</div>
@@ -400,7 +400,7 @@
     async function deleteEmpresa() {
       const id = document.getElementById('empresaId').value;
       if (!id) return;
-      if (!confirm('¿Eliminar esta empresa? Las posiciones vinculadas quedarán sin empresa.')) return;
+      if (!confirm('Â¿Eliminar esta empresa? Las posiciones vinculadas quedarÃ¡n sin empresa.')) return;
 
       const { error } = await sb.from('empresas').delete().eq('id', id);
       if (error) { alert('Error: ' + error.message); return; }
@@ -426,7 +426,7 @@
       return 'RD$ ' + Number(n || 0).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
     function fmtDate(d) {
-      return d ? new Date(d + 'T00:00:00').toLocaleDateString('es-DO') : '—';
+      return d ? new Date(d + 'T00:00:00').toLocaleDateString('es-DO') : 'â€”';
     }
 
     async function openDashboard(id) {
@@ -438,10 +438,10 @@
 
       document.getElementById('dashNombre').textContent = empresa.nombre;
       const metaParts = [];
-      if (empresa.industria) metaParts.push(`🏭 ${empresa.industria}`);
-      if (empresa.contacto_nombre) metaParts.push(`👤 ${empresa.contacto_nombre}`);
-      if (empresa.contacto_email) metaParts.push(`✉️ ${empresa.contacto_email}`);
-      if (empresa.contacto_telefono) metaParts.push(`📞 ${empresa.contacto_telefono}`);
+      if (empresa.industria) metaParts.push(`ðŸ­ ${empresa.industria}`);
+      if (empresa.contacto_nombre) metaParts.push(`ðŸ‘¤ ${empresa.contacto_nombre}`);
+      if (empresa.contacto_email) metaParts.push(`âœ‰ï¸ ${empresa.contacto_email}`);
+      if (empresa.contacto_telefono) metaParts.push(`ðŸ“ž ${empresa.contacto_telefono}`);
       document.getElementById('dashMeta').innerHTML = metaParts.map(p => `<span>${p}</span>`).join('');
       document.getElementById('dashEditBtn').onclick = () => openModal(empresa);
 
@@ -501,10 +501,10 @@
         return;
       }
       wrap.innerHTML = `<table class="dash-table">
-        <thead><tr><th>Título</th><th>Estado</th><th>Salario</th><th>Fecha apertura</th></tr></thead>
+        <thead><tr><th>TÃ­tulo</th><th>Estado</th><th>Salario</th><th>Fecha apertura</th></tr></thead>
         <tbody>${poss.map(p => `<tr>
-          <td>${p.titulo || '—'}</td>
-          <td><span class="badge badge-${p.estado}">${estadoPosLabels[p.estado] || p.estado || '—'}</span></td>
+          <td>${p.titulo || 'â€”'}</td>
+          <td><span class="badge badge-${p.estado}">${estadoPosLabels[p.estado] || p.estado || 'â€”'}</span></td>
           <td>${p.salario_ofrecido ? fmtMoney(p.salario_ofrecido) : 'No definido'}</td>
           <td>${fmtDate(p.fecha_apertura)}</td>
         </tr>`).join('')}</tbody>
@@ -518,15 +518,15 @@
         return;
       }
       wrap.innerHTML = `<table class="dash-table">
-        <thead><tr><th>Candidato</th><th>Posición</th><th>Estado</th></tr></thead>
+        <thead><tr><th>Candidato</th><th>PosiciÃ³n</th><th>Estado</th></tr></thead>
         <tbody>${candRows.map(cp => {
           const cand = cp.candidatos;
-          const nombreCompleto = cand ? [cand.nombre, cand.apellido].filter(Boolean).join(' ') : '—';
-          const posTitulo = cp.posiciones ? cp.posiciones.titulo : '—';
+          const nombreCompleto = cand ? [cand.nombre, cand.apellido].filter(Boolean).join(' ') : 'â€”';
+          const posTitulo = cp.posiciones ? cp.posiciones.titulo : 'â€”';
           return `<tr>
             <td>${nombreCompleto}</td>
             <td>${posTitulo}</td>
-            <td><span class="badge badge-${cp.estado}">${estadoCandLabels[cp.estado] || cp.estado || '—'}</span></td>
+            <td><span class="badge badge-${cp.estado}">${estadoCandLabels[cp.estado] || cp.estado || 'â€”'}</span></td>
           </tr>`;
         }).join('')}</tbody>
       </table>`;
@@ -540,19 +540,19 @@
       }
       const today = new Date();
       wrap.innerHTML = `<table class="dash-table">
-        <thead><tr><th>Número</th><th>Monto</th><th>Estado</th><th>Emisión</th><th>Vencimiento</th><th>Aging</th></tr></thead>
+        <thead><tr><th>NÃºmero</th><th>Monto</th><th>Estado</th><th>EmisiÃ³n</th><th>Vencimiento</th><th>Aging</th></tr></thead>
         <tbody>${facs.map(f => {
-          let aging = '—';
+          let aging = 'â€”';
           if ((f.estado === 'pendiente' || f.estado === 'enviada' || f.estado === 'vencida') && f.fecha_vencimiento) {
             const venc = new Date(f.fecha_vencimiento + 'T00:00:00');
             const diffDays = Math.floor((today - venc) / (1000 * 60 * 60 * 24));
-            if (diffDays > 0) aging = `<span class="aging">${diffDays} días vencida</span>`;
-            else aging = `${Math.abs(diffDays)} días restantes`;
+            if (diffDays > 0) aging = `<span class="aging">${diffDays} dÃ­as vencida</span>`;
+            else aging = `${Math.abs(diffDays)} dÃ­as restantes`;
           }
           return `<tr>
-            <td>${f.numero || '—'}</td>
+            <td>${f.numero || 'â€”'}</td>
             <td>${fmtMoney(f.monto)}</td>
-            <td><span class="badge badge-${f.estado}">${estadoFacLabels[f.estado] || f.estado || '—'}</span></td>
+            <td><span class="badge badge-${f.estado}">${estadoFacLabels[f.estado] || f.estado || 'â€”'}</span></td>
             <td>${fmtDate(f.fecha_emision)}</td>
             <td>${fmtDate(f.fecha_vencimiento)}</td>
             <td>${aging}</td>
@@ -566,3 +566,4 @@
   </script>
 </body>
 </html>
+

@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ternas — We Recruit DR</title>
+  <title>Ternas â€” We Recruit DR</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -208,13 +208,13 @@
 <body>
   <nav class="sidebar">
     <div class="sidebar-logo">We Recruit DR</div>
-    <a href="index.html">📊 Dashboard</a>
-    <a href="candidatos.html">👤 Candidatos</a>
-    <a href="posiciones.html">💼 Posiciones</a>
-    <a href="ternas.html" class="active">📋 Ternas</a>
-    <a href="empresas.html">🏢 Empresas</a>
+    <a href="index.html">ðŸ“Š Dashboard</a>
+    <a href="candidatos.html">ðŸ‘¤ Candidatos</a>
+    <a href="posiciones.html">ðŸ’¼ Posiciones</a>
+    <a href="ternas.html" class="active">ðŸ“‹ Ternas</a>
+    <a href="empresas.html">ðŸ¢ Empresas</a>
     <div class="sidebar-bottom">
-      <button onclick="logout()">Cerrar sesión</button>
+      <button onclick="logout()">Cerrar sesiÃ³n</button>
     </div>
   </nav>
 
@@ -225,13 +225,13 @@
     </div>
 
     <div class="controls">
-      <input type="text" class="search-input" id="searchInput" placeholder="Buscar por posición o empresa..." oninput="filterTernas()">
+      <input type="text" class="search-input" id="searchInput" placeholder="Buscar por posiciÃ³n o empresa..." oninput="filterTernas()">
     </div>
 
     <div class="ternas-grid" id="ternasGrid"></div>
     <div class="empty-state" id="emptyState" style="display:none;">
-      <p style="font-size:32px;">📋</p>
-      <p>No hay ternas todavía. Crea la primera.</p>
+      <p style="font-size:32px;">ðŸ“‹</p>
+      <p>No hay ternas todavÃ­a. Crea la primera.</p>
     </div>
   </div>
 
@@ -245,18 +245,18 @@
           <input type="text" id="f_nombre" placeholder="Ej: Terna Gerente de Ventas - Julio 2026">
         </div>
         <div class="form-group">
-          <label>Posición *</label>
+          <label>PosiciÃ³n *</label>
           <select id="f_posicion" required onchange="onPositionChange()">
-            <option value="">Seleccionar posición...</option>
+            <option value="">Seleccionar posiciÃ³n...</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Fecha de envío</label>
+          <label>Fecha de envÃ­o</label>
           <input type="date" id="f_fecha_envio">
         </div>
 
         <div id="candidatePickSection" style="display:none;">
-          <h3 class="section-title">Candidatos asignados a esta posición</h3>
+          <h3 class="section-title">Candidatos asignados a esta posiciÃ³n</h3>
           <p style="font-size:12px;color:#888;margin-bottom:10px;">Selecciona hasta 3 candidatos y define su orden en la terna.</p>
           <div class="pick-list" id="pickList"></div>
         </div>
@@ -274,11 +274,11 @@
     <div class="modal modal-lg">
       <div class="detail-header">
         <div>
-          <h2 id="d_titulo">—</h2>
-          <div class="detail-sub" id="d_sub">—</div>
+          <h2 id="d_titulo">â€”</h2>
+          <div class="detail-sub" id="d_sub">â€”</div>
         </div>
         <div class="detail-actions">
-          <button class="btn btn-primary btn-sm" onclick="generatePdf()">🖨️ Generar PDF</button>
+          <button class="btn btn-primary btn-sm" onclick="generatePdf()">ðŸ–¨ï¸ Generar PDF</button>
           <button class="btn btn-danger btn-sm" onclick="deleteTerna()">Eliminar</button>
           <button class="btn btn-secondary btn-sm" onclick="closeDetailModal()">Cerrar</button>
         </div>
@@ -286,7 +286,7 @@
 
       <div class="cand-detail-grid" id="candDetailGrid"></div>
 
-      <h3 class="section-title">Comparación de candidatos</h3>
+      <h3 class="section-title">ComparaciÃ³n de candidatos</h3>
       <div style="overflow-x:auto;">
         <table class="comparison-table" id="comparisonTable"></table>
       </div>
@@ -377,12 +377,12 @@
           const foto = c.candidatos?.foto_url;
           return `<div class="mini-avatar">${foto ? `<img src="${foto}" alt="">` : initials(nombre)}</div>`;
         }).join('');
-        const fecha = t.fecha_envio ? new Date(t.fecha_envio + 'T00:00:00').toLocaleDateString('es-DO') : 'Sin fecha de envío';
+        const fecha = t.fecha_envio ? new Date(t.fecha_envio + 'T00:00:00').toLocaleDateString('es-DO') : 'Sin fecha de envÃ­o';
         const badge = t.fecha_envio ? '<span class="badge badge-enviada">Enviada</span>' : '<span class="badge badge-pendiente">Pendiente</span>';
 
         return `<div class="terna-card" onclick="openDetail('${t.id}')">
           <div class="terna-title">${titulo}</div>
-          <div class="terna-empresa">🏢 ${empresa}</div>
+          <div class="terna-empresa">ðŸ¢ ${empresa}</div>
           <div class="terna-candidatos">${avatars || '<span style="font-size:12px;color:#bbb;">Sin candidatos</span>'}</div>
           <div class="terna-footer">
             ${badge}
@@ -398,8 +398,8 @@
       selectedPicks = {};
       document.getElementById('candidatePickSection').style.display = 'none';
       const sel = document.getElementById('f_posicion');
-      sel.innerHTML = '<option value="">Seleccionar posición...</option>' +
-        allPositions.map(p => `<option value="${p.id}">${p.titulo} — ${p.empresas?.nombre || 'Sin empresa'}</option>`).join('');
+      sel.innerHTML = '<option value="">Seleccionar posiciÃ³n...</option>' +
+        allPositions.map(p => `<option value="${p.id}">${p.titulo} â€” ${p.empresas?.nombre || 'Sin empresa'}</option>`).join('');
       document.getElementById('f_fecha_envio').value = '';
       document.getElementById('createModal').classList.add('active');
     }
@@ -426,7 +426,7 @@
     function renderPickList() {
       const list = document.getElementById('pickList');
       if (!currentPositionCandidates.length) {
-        list.innerHTML = '<p style="font-size:13px;color:#888;">Esta posición no tiene candidatos asignados. Asígnalos primero en Posiciones.</p>';
+        list.innerHTML = '<p style="font-size:13px;color:#888;">Esta posiciÃ³n no tiene candidatos asignados. AsÃ­gnalos primero en Posiciones.</p>';
         return;
       }
       list.innerHTML = currentPositionCandidates.map(c => {
@@ -449,7 +449,7 @@
         delete selectedPicks[candId];
       } else {
         const orden = parseInt(value);
-        // liberar ese orden si otro candidato lo tenía
+        // liberar ese orden si otro candidato lo tenÃ­a
         for (const k in selectedPicks) {
           if (selectedPicks[k] === orden && k !== candId) delete selectedPicks[k];
         }
@@ -463,7 +463,7 @@
       const posId = document.getElementById('f_posicion').value;
       const picks = Object.entries(selectedPicks);
       if (!picks.length) { alert('Selecciona al menos un candidato para la terna.'); return; }
-      if (picks.length > 3) { alert('Una terna admite máximo 3 candidatos.'); return; }
+      if (picks.length > 3) { alert('Una terna admite mÃ¡ximo 3 candidatos.'); return; }
 
       const btn = document.getElementById('saveBtn');
       btn.disabled = true;
@@ -503,7 +503,7 @@
 
       document.getElementById('d_titulo').textContent = t.nombre || t.posiciones?.titulo || 'Terna';
       document.getElementById('d_sub').textContent =
-        `${t.posiciones?.titulo || ''} — ${t.posiciones?.empresas?.nombre || 'Sin empresa'}${t.fecha_envio ? ' · Enviada: ' + new Date(t.fecha_envio + 'T00:00:00').toLocaleDateString('es-DO') : ''}`;
+        `${t.posiciones?.titulo || ''} â€” ${t.posiciones?.empresas?.nombre || 'Sin empresa'}${t.fecha_envio ? ' Â· Enviada: ' + new Date(t.fecha_envio + 'T00:00:00').toLocaleDateString('es-DO') : ''}`;
 
       const cands = (t.terna_candidatos || []).sort((a, b) => (a.orden || 0) - (b.orden || 0));
       const ids = cands.map(c => c.candidato_id);
@@ -530,7 +530,7 @@
     function starsHtml(n, size) {
       n = n || 0;
       let s = '';
-      for (let i = 1; i <= 5; i++) s += i <= n ? '★' : '<span class="empty">☆</span>';
+      for (let i = 1; i <= 5; i++) s += i <= n ? 'â˜…' : '<span class="empty">â˜†</span>';
       return s;
     }
 
@@ -541,16 +541,16 @@
         const ev = c.evaluacion || {};
         return `<div class="cand-detail-card">
           <div class="cand-detail-avatar">${c.foto_url ? `<img src="${c.foto_url}" alt="">` : initials(nombre)}</div>
-          <div class="cand-detail-name">#${c.orden} · ${nombre}</div>
-          <div class="cand-detail-contact">${c.email || ''}${c.telefono ? ' · ' + c.telefono : ''}</div>
+          <div class="cand-detail-name">#${c.orden} Â· ${nombre}</div>
+          <div class="cand-detail-contact">${c.email || ''}${c.telefono ? ' Â· ' + c.telefono : ''}</div>
           <div class="cand-stars">${starsHtml(c.puntuacion_estrellas)}</div>
           ${c.resultado_disc ? `<div class="cand-disc">DISC: ${c.resultado_disc}</div>` : ''}
           <table class="eval-table">
-            <tr><td>Experiencia</td><td>${ev.experiencia || '—'}</td></tr>
-            <tr><td>Actitud</td><td>${ev.actitud || '—'}</td></tr>
-            <tr><td>Presentación</td><td>${ev.presentacion || '—'}</td></tr>
-            <tr><td>Referencias</td><td>${ev.referencias || '—'}</td></tr>
-            <tr><td>Comunicación</td><td>${ev.comunicacion || '—'}</td></tr>
+            <tr><td>Experiencia</td><td>${ev.experiencia || 'â€”'}</td></tr>
+            <tr><td>Actitud</td><td>${ev.actitud || 'â€”'}</td></tr>
+            <tr><td>PresentaciÃ³n</td><td>${ev.presentacion || 'â€”'}</td></tr>
+            <tr><td>Referencias</td><td>${ev.referencias || 'â€”'}</td></tr>
+            <tr><td>ComunicaciÃ³n</td><td>${ev.comunicacion || 'â€”'}</td></tr>
             <tr><td><strong>Promedio</strong></td><td>${ev.promedio || calcPromedio(ev)}</td></tr>
           </table>
           ${c.notas ? `<div class="cand-notes">${c.notas}</div>` : ''}
@@ -560,21 +560,21 @@
 
     function calcPromedio(ev) {
       const vals = ['experiencia','actitud','presentacion','referencias','comunicacion'].map(k => parseFloat(ev[k])).filter(v => !isNaN(v));
-      if (!vals.length) return '—';
+      if (!vals.length) return 'â€”';
       return (vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(1);
     }
 
     function renderComparison(merged) {
       const table = document.getElementById('comparisonTable');
       const criterios = [
-        ['Experiencia', c => c.evaluacion?.experiencia || '—'],
-        ['Actitud', c => c.evaluacion?.actitud || '—'],
-        ['Presentación', c => c.evaluacion?.presentacion || '—'],
-        ['Referencias', c => c.evaluacion?.referencias || '—'],
-        ['Comunicación', c => c.evaluacion?.comunicacion || '—'],
+        ['Experiencia', c => c.evaluacion?.experiencia || 'â€”'],
+        ['Actitud', c => c.evaluacion?.actitud || 'â€”'],
+        ['PresentaciÃ³n', c => c.evaluacion?.presentacion || 'â€”'],
+        ['Referencias', c => c.evaluacion?.referencias || 'â€”'],
+        ['ComunicaciÃ³n', c => c.evaluacion?.comunicacion || 'â€”'],
         ['Promedio', c => c.evaluacion?.promedio || calcPromedio(c.evaluacion || {})],
-        ['Puntuación', c => starsHtml(c.puntuacion_estrellas)],
-        ['DISC', c => c.resultado_disc || '—'],
+        ['PuntuaciÃ³n', c => starsHtml(c.puntuacion_estrellas)],
+        ['DISC', c => c.resultado_disc || 'â€”'],
       ];
       let html = '<tr><th>Criterio</th>' + merged.map(c => `<th>${c.nombre || 'Candidato'}</th>`).join('') + '</tr>';
       html += criterios.map(([label, fn]) => `<tr><td>${label}</td>${merged.map(c => `<td>${fn(c)}</td>`).join('')}</tr>`).join('');
@@ -583,7 +583,7 @@
 
     async function deleteTerna() {
       if (!currentTerna) return;
-      if (!confirm('¿Eliminar esta terna? Esta acción no se puede deshacer.')) return;
+      if (!confirm('Â¿Eliminar esta terna? Esta acciÃ³n no se puede deshacer.')) return;
       const { error } = await sb.from('ternas').delete().eq('id', currentTerna.id);
       if (error) { alert('Error: ' + error.message); return; }
       closeDetailModal();
@@ -607,33 +607,33 @@
         <div class="pp-logo">WR</div>
         <h1>${posicionTitulo}</h1>
         <div class="pp-empresa">${empresa}</div>
-        <div class="pp-sub">Presentación de terna de candidatos</div>
+        <div class="pp-sub">PresentaciÃ³n de terna de candidatos</div>
         <div class="pp-sub">${fecha}</div>
         <div class="pp-tag">We Recruit DR</div>
       </div>`;
 
-      // Una página por candidato
+      // Una pÃ¡gina por candidato
       merged.forEach(c => {
         const ev = c.evaluacion || {};
         const promedio = ev.promedio || calcPromedio(ev);
         html += `<div class="print-page">
           <div class="pp-header">
             <span class="pp-brand">WE RECRUIT DR</span>
-            <span class="pp-pos">${posicionTitulo} — ${empresa}</span>
+            <span class="pp-pos">${posicionTitulo} â€” ${empresa}</span>
           </div>
           <div class="pp-cand-photo">${c.foto_url ? `<img src="${c.foto_url}" alt="">` : initials(c.nombre)}</div>
-          <div class="pp-cand-name">Candidato #${c.orden} — ${c.nombre || ''}</div>
-          <div class="pp-cand-contact">${c.email || ''}${c.telefono ? ' · ' + c.telefono : ''}</div>
+          <div class="pp-cand-name">Candidato #${c.orden} â€” ${c.nombre || ''}</div>
+          <div class="pp-cand-contact">${c.email || ''}${c.telefono ? ' Â· ' + c.telefono : ''}</div>
           <div class="pp-cand-stars">${starsHtml(c.puntuacion_estrellas)}</div>
 
-          <div class="pp-section-label">Evaluación</div>
+          <div class="pp-section-label">EvaluaciÃ³n</div>
           <table class="pp-score-table">
             <tr><th>Criterio</th><th>Puntaje</th></tr>
-            <tr><td>Experiencia</td><td>${ev.experiencia || '—'}</td></tr>
-            <tr><td>Actitud</td><td>${ev.actitud || '—'}</td></tr>
-            <tr><td>Presentación</td><td>${ev.presentacion || '—'}</td></tr>
-            <tr><td>Referencias</td><td>${ev.referencias || '—'}</td></tr>
-            <tr><td>Comunicación</td><td>${ev.comunicacion || '—'}</td></tr>
+            <tr><td>Experiencia</td><td>${ev.experiencia || 'â€”'}</td></tr>
+            <tr><td>Actitud</td><td>${ev.actitud || 'â€”'}</td></tr>
+            <tr><td>PresentaciÃ³n</td><td>${ev.presentacion || 'â€”'}</td></tr>
+            <tr><td>Referencias</td><td>${ev.referencias || 'â€”'}</td></tr>
+            <tr><td>ComunicaciÃ³n</td><td>${ev.comunicacion || 'â€”'}</td></tr>
             <tr><td>Promedio</td><td>${promedio}</td></tr>
           </table>
 
@@ -641,32 +641,32 @@
 
           ${c.notas ? `<div class="pp-section-label">Notas</div><div class="pp-notes">${c.notas}</div>` : ''}
 
-          <div class="pp-footer">We Recruit DR · ${fecha}</div>
+          <div class="pp-footer">We Recruit DR Â· ${fecha}</div>
         </div>`;
       });
 
-      // Comparación
+      // ComparaciÃ³n
       const criterios = [
-        ['Experiencia', c => c.evaluacion?.experiencia || '—'],
-        ['Actitud', c => c.evaluacion?.actitud || '—'],
-        ['Presentación', c => c.evaluacion?.presentacion || '—'],
-        ['Referencias', c => c.evaluacion?.referencias || '—'],
-        ['Comunicación', c => c.evaluacion?.comunicacion || '—'],
+        ['Experiencia', c => c.evaluacion?.experiencia || 'â€”'],
+        ['Actitud', c => c.evaluacion?.actitud || 'â€”'],
+        ['PresentaciÃ³n', c => c.evaluacion?.presentacion || 'â€”'],
+        ['Referencias', c => c.evaluacion?.referencias || 'â€”'],
+        ['ComunicaciÃ³n', c => c.evaluacion?.comunicacion || 'â€”'],
         ['Promedio', c => c.evaluacion?.promedio || calcPromedio(c.evaluacion || {})],
-        ['DISC', c => c.resultado_disc || '—'],
+        ['DISC', c => c.resultado_disc || 'â€”'],
       ];
       let compareRows = criterios.map(([label, fn]) => `<tr><td>${label}</td>${merged.map(c => `<td>${fn(c)}</td>`).join('')}</tr>`).join('');
       html += `<div class="print-page">
         <div class="pp-header">
           <span class="pp-brand">WE RECRUIT DR</span>
-          <span class="pp-pos">${posicionTitulo} — ${empresa}</span>
+          <span class="pp-pos">${posicionTitulo} â€” ${empresa}</span>
         </div>
-        <div class="pp-section-label">Comparación de candidatos</div>
+        <div class="pp-section-label">ComparaciÃ³n de candidatos</div>
         <table class="pp-compare-table">
           <tr><th>Criterio</th>${merged.map(c => `<th>${c.nombre || ''}</th>`).join('')}</tr>
           ${compareRows}
         </table>
-        <div class="pp-footer">We Recruit DR · ${fecha}</div>
+        <div class="pp-footer">We Recruit DR Â· ${fecha}</div>
       </div>`;
 
       document.getElementById('printArea').innerHTML = html;
@@ -688,3 +688,4 @@
   </script>
 </body>
 </html>
+

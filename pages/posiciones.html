@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Posiciones — We Recruit DR</title>
+  <title>Posiciones â€” We Recruit DR</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -117,7 +117,7 @@
     .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
     .form-full { grid-column: 1 / -1; }
 
-    /* CANDIDATOS EN POSICIÓN */
+    /* CANDIDATOS EN POSICIÃ“N */
     .section-title { font-size: 15px; font-weight: 600; color: #063958; margin: 20px 0 12px; }
     .assigned-list { margin-bottom: 16px; }
     .assigned-item {
@@ -141,24 +141,24 @@
 <body>
   <nav class="sidebar">
     <div class="sidebar-logo">We Recruit DR</div>
-    <a href="index.html">📊 Dashboard</a>
-    <a href="candidatos.html">👤 Candidatos</a>
-    <a href="posiciones.html" class="active">💼 Posiciones</a>
-    <a href="ternas.html">📋 Ternas</a>
-    <a href="empresas.html">🏢 Empresas</a>
+    <a href="index.html">ðŸ“Š Dashboard</a>
+    <a href="candidatos.html">ðŸ‘¤ Candidatos</a>
+    <a href="posiciones.html" class="active">ðŸ’¼ Posiciones</a>
+    <a href="ternas.html">ðŸ“‹ Ternas</a>
+    <a href="empresas.html">ðŸ¢ Empresas</a>
     <div class="sidebar-bottom">
-      <button onclick="logout()">Cerrar sesión</button>
+      <button onclick="logout()">Cerrar sesiÃ³n</button>
     </div>
   </nav>
 
   <div class="main">
     <div class="page-header">
       <h1>Posiciones</h1>
-      <button class="btn btn-primary" onclick="openModal()">+ Nueva posición</button>
+      <button class="btn btn-primary" onclick="openModal()">+ Nueva posiciÃ³n</button>
     </div>
 
     <div class="controls">
-      <input type="text" class="search-input" id="searchInput" placeholder="Buscar por título o empresa..." oninput="filterPositions()">
+      <input type="text" class="search-input" id="searchInput" placeholder="Buscar por tÃ­tulo o empresa..." oninput="filterPositions()">
       <select class="filter-select" id="filterEstado" onchange="filterPositions()">
         <option value="">Todos los estados</option>
         <option value="abierta">Abierta</option>
@@ -170,21 +170,21 @@
 
     <div class="positions-grid" id="positionsGrid"></div>
     <div class="empty-state" id="emptyState" style="display:none;">
-      <p style="font-size:32px;">💼</p>
-      <p>No hay posiciones todavía. Crea tu primera posición.</p>
+      <p style="font-size:32px;">ðŸ’¼</p>
+      <p>No hay posiciones todavÃ­a. Crea tu primera posiciÃ³n.</p>
     </div>
   </div>
 
   <!-- MODAL -->
   <div class="modal-overlay" id="modal">
     <div class="modal">
-      <h2 id="modalTitle">Nueva posición</h2>
+      <h2 id="modalTitle">Nueva posiciÃ³n</h2>
       <form id="positionForm" onsubmit="savePosition(event)">
         <input type="hidden" id="positionId">
 
         <div class="form-row">
           <div class="form-group">
-            <label>Título del puesto *</label>
+            <label>TÃ­tulo del puesto *</label>
             <input type="text" id="f_titulo" required>
           </div>
           <div class="form-group">
@@ -197,11 +197,11 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label>Tipo de posición</label>
+            <label>Tipo de posiciÃ³n</label>
             <select id="f_tipo">
               <option value="Presencial">Presencial</option>
               <option value="Remoto">Remoto</option>
-              <option value="Híbrido">Híbrido</option>
+              <option value="HÃ­brido">HÃ­brido</option>
               <option value="Freelance">Freelance</option>
             </select>
           </div>
@@ -209,7 +209,7 @@
             <label>Sector</label>
             <select id="f_sector">
               <option value="">Sin especificar</option>
-              <option value="Tecnología">Tecnología</option>
+              <option value="TecnologÃ­a">TecnologÃ­a</option>
               <option value="Finanzas">Finanzas</option>
               <option value="Marketing">Marketing</option>
               <option value="Operaciones">Operaciones</option>
@@ -217,7 +217,7 @@
               <option value="Salud">Salud</option>
               <option value="Legal">Legal</option>
               <option value="Ventas">Ventas</option>
-              <option value="Educación">Educación</option>
+              <option value="EducaciÃ³n">EducaciÃ³n</option>
               <option value="Otro">Otro</option>
             </select>
           </div>
@@ -229,7 +229,7 @@
             <input type="text" id="f_departamento">
           </div>
           <div class="form-group">
-            <label>Ubicación</label>
+            <label>UbicaciÃ³n</label>
             <input type="text" id="f_ubicacion">
           </div>
         </div>
@@ -256,7 +256,7 @@
             <input type="date" id="f_fecha_apertura">
           </div>
           <div class="form-group">
-            <label>Fecha límite</label>
+            <label>Fecha lÃ­mite</label>
             <input type="date" id="f_fecha_limite">
           </div>
         </div>
@@ -268,10 +268,10 @@
 
         <div class="form-group">
           <label>Notas</label>
-          <textarea id="f_notas" placeholder="Notas internas sobre esta posición..."></textarea>
+          <textarea id="f_notas" placeholder="Notas internas sobre esta posiciÃ³n..."></textarea>
         </div>
 
-        <!-- Candidatos asignados (solo en edición) -->
+        <!-- Candidatos asignados (solo en ediciÃ³n) -->
         <div id="candidatesSection" style="display:none;">
           <h3 class="section-title">Candidatos asignados</h3>
           <div class="assigned-list" id="assignedList"></div>
@@ -381,15 +381,15 @@
 
         return `<div class="pos-card estado-${p.estado}" onclick="editPosition('${p.id}')">
           <div class="pos-title">${p.titulo}</div>
-          <div class="pos-empresa">🏢 ${empresa}</div>
+          <div class="pos-empresa">ðŸ¢ ${empresa}</div>
           <div class="pos-details">
             <span class="pos-detail"><strong>Salario:</strong> ${salario}</span>
-            ${p.ubicacion ? `<span class="pos-detail"><strong>Ubicación:</strong> ${p.ubicacion}</span>` : ''}
+            ${p.ubicacion ? `<span class="pos-detail"><strong>UbicaciÃ³n:</strong> ${p.ubicacion}</span>` : ''}
             ${p.departamento ? `<span class="pos-detail"><strong>Depto:</strong> ${p.departamento}</span>` : ''}
           </div>
           <div class="pos-footer">
             <span class="badge badge-${p.estado}">${estadoLabels[p.estado] || p.estado}</span>
-            <span class="pos-date">${fecha}${limite ? ' → ' + limite : ''}</span>
+            <span class="pos-date">${fecha}${limite ? ' â†’ ' + limite : ''}</span>
           </div>
         </div>`;
       }).join('');
@@ -406,7 +406,7 @@
         allEmpresas.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
 
       if (position) {
-        document.getElementById('modalTitle').textContent = 'Editar posición';
+        document.getElementById('modalTitle').textContent = 'Editar posiciÃ³n';
         document.getElementById('deleteBtn').style.display = 'inline-block';
         document.getElementById('positionId').value = position.id;
         document.getElementById('f_titulo').value = position.titulo || '';
@@ -422,11 +422,11 @@
         document.getElementById('f_requisitos').value = position.requisitos || '';
         document.getElementById('f_notas').value = position.notas || '';
 
-        // Mostrar sección de candidatos
+        // Mostrar secciÃ³n de candidatos
         document.getElementById('candidatesSection').style.display = 'block';
         loadAssignedCandidates(position.id);
       } else {
-        document.getElementById('modalTitle').textContent = 'Nueva posición';
+        document.getElementById('modalTitle').textContent = 'Nueva posiciÃ³n';
         document.getElementById('deleteBtn').style.display = 'none';
         document.getElementById('positionId').value = '';
         document.getElementById('candidatesSection').style.display = 'none';
@@ -452,7 +452,7 @@
       const labels = { identificado: 'Identificado', enviado: 'Enviado', en_entrevista: 'En entrevista', aprobado: 'Aprobado', contratado: 'Contratado', rechazado: 'Rechazado', disponible: 'Disponible' };
 
       if (!data || data.length === 0) {
-        list.innerHTML = '<p style="font-size:13px;color:#888;padding:8px 0;">No hay candidatos asignados todavía.</p>';
+        list.innerHTML = '<p style="font-size:13px;color:#888;padding:8px 0;">No hay candidatos asignados todavÃ­a.</p>';
       } else {
         list.innerHTML = data.map(cp => `<div class="assigned-item">
           <span>${cp.candidatos?.nombre || 'Sin nombre'}</span>
@@ -525,7 +525,7 @@
 
         closeModal();
         await loadPositions();
-        showToast(id ? 'Posición actualizada' : 'Posición creada');
+        showToast(id ? 'PosiciÃ³n actualizada' : 'PosiciÃ³n creada');
       } catch (err) {
         alert('Error: ' + err.message);
       }
@@ -537,14 +537,14 @@
     async function deletePosition() {
       const id = document.getElementById('positionId').value;
       if (!id) return;
-      if (!confirm('¿Eliminar esta posición? Se eliminarán también los candidatos asignados.')) return;
+      if (!confirm('Â¿Eliminar esta posiciÃ³n? Se eliminarÃ¡n tambiÃ©n los candidatos asignados.')) return;
 
       const { error } = await sb.from('posiciones').delete().eq('id', id);
       if (error) { alert('Error: ' + error.message); return; }
 
       closeModal();
       await loadPositions();
-      showToast('Posición eliminada');
+      showToast('PosiciÃ³n eliminada');
     }
 
     function showToast(msg) {
@@ -559,3 +559,4 @@
   </script>
 </body>
 </html>
+
