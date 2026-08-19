@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vacantes del Portal — We Recruit DR</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #1a1a1a; }
+
+    .sidebar { position: fixed; left: 0; top: 0; width: 220px; height: 100vh; background: #063958; padding: 24px 0; display: flex; flex-direction: column; }
+    .sidebar-logo { color: #CEE4CC; font-size: 18px; font-weight: 700; padding: 0 20px; margin-bottom: 32px; }
+    .sidebar a { display: flex; align-items: center; gap: 10px; padding: 11px 20px; color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; transition: all 0.15s; }
+    .sidebar a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .sidebar a.active { background: rgba(255,255,255,0.12); color: #CEE4CC; font-weight: 600; }
+    .sidebar-bottom { margin-top: auto; padding: 0 20px; }
+    .sidebar-bottom button { width: 100%; padding: 10px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); border: none; border-radius: 6px; font-size: 13px; cursor: pointer; }
+    .sidebar-bottom button:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+    .main { margin-left: 220px; padding: 32px; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    .page-header h1 { font-size: 24px; color: #063958; }
+
+    .tabs { display: flex; gap: 0; border-bottom: 2px solid #e8edf2; margin-bottom: 24px; }
+    .tab-btn { padding: 10px 20px; font-size: 14px; font-weight: 600; background: none; border: none; cursor: pointer; color: #666; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s; }
+    .tab-btn.active { color: #063958; border-bottom-color: #063958; }
+    .tab-btn .badge { display: inline-block; background: #ef4444; color: #fff; border-radius: 10px; font-size: 11px; padding: 1px 7px; margin-left: 6px; font-weight: 700; }
+
+    .vacante-card { background: #fff; border: 1.5px solid #e8edf2; border-radius: 12px; padding: 1.2rem; margin-bottom: 1rem; }
+    .vacante-card:hover { border-color: #0F6B9F; }
+    .vacante-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: .8rem; }
+    .vacante-titulo { font-weight: 700; font-size: 16px; color: #063958; }
+    .vacante-empresa { font-size: 13px; color: #0F6B9F; font-weight: 600; margin-top: 2px; }
+    .vacante-meta { font-size: 12px; color: #666; margin-top: 4px; }
+    .status-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+    .status-pendiente { background: #fef3c7; color: #92400e; }
+    .status-aprobada { background: #d1fae5; color: #065f46; }
+    .status-rechazada { background: #fee2e2; color: #991b1b; }
+    .vacante-desc { font-size: 13px; color: #555; line-height: 1.5; margin-bottom: .8rem; }
+    .vacante-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-aprobar { padding: 8px 16px; background: #063958; color: #CEE4CC; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .btn-aprobar:hover { background: #0F6B9F; }
+    .btn-rechazar { padding: 8px 14px; background: #fff; color: #ef4444; border: 1.5px solid #fca5a5; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .btn-rechazar:hover { background: #fef2f2; }
+    .btn-apps { padding: 8px 14px; background: #EBF4FA; color: #0F6B9F; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .btn-apps:hover { background: #cce4f5; }
+    .btn-despublicar { padding: 8px 14px; background: #fff; color: #666; border: 1.5px solid #e8edf2; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+
+    .apps-panel { background: #f5f7fa; border-radius: 10px; padding: 1rem; margin-top: .8rem; display: none; }
+    .app-row { background: #fff; border: 1px solid #e8edf2; border-radius: 8px; padding: .8rem 1rem; margin-bottom: .5rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+    .app-nombre { font-weight: 700; font-size: 14px; color: #063958; }
+    .app-info { font-size: 12px; color: #666; margin-top: 2px; }
+    .app-motivacion { font-size: 12px; color: #555; font-style: italic; margin-top: 4px; }
+    .app-cv { font-size: 12px; color: #0F6B9F; font-weight: 700; text-decoration: none; }
+
+    .empty { text-align: center; padding: 3rem; color: #666; }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+
+    .toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; background: #063958; color: #fff; z-index: 200; display: none; }
+    .toast.show { display: block; }
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo">We Recruit DR</div>
+    <a href="index.html">📊 Dashboard</a>
+    <a href="candidatos.html">👤 Candidatos</a>
+    <a href="posiciones.html">💼 Posiciones</a>
+    <a href="ternas.html">📋 Ternas</a>
+    <a href="empresas.html">🏢 Empresas</a>
+    <a href="freelancers.html">🎨 Freelancers</a>
+    <a href="vacantes-portal.html" class="active">📝 Vacantes Portal</a>
+    <div class="sidebar-bottom">
+      <button onclick="logout()">Cerrar sesión</button>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="page-header">
+      <h1>Vacantes del Portal</h1>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('pendientes')">Pendientes <span class="badge" id="badgePendientes">0</span></button>
+      <button class="tab-btn" onclick="switchTab('aprobadas')">Aprobadas <span id="badgeAprobadas" style="margin-left:6px;font-size:12px;color:#666;"></span></button>
+      <button class="tab-btn" onclick="switchTab('rechazadas')">Rechazadas <span id="badgeRechazadas" style="margin-left:6px;font-size:12px;color:#666;"></span></button>
+    </div>
+
+    <div id="lista"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://bohkpbkktcnwsglvcrax.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvaGtwYmtrdGNud3NnbHZjcmF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NjY0MjYsImV4cCI6MjA5NjM0MjQyNn0.yW7atZCGHqipQ-KE-UH5J3DPlXvud5lzf5LMs3J9YzA';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let allVacantes = [];
+    let activeTab = 'pendientes';
+
+    async function init() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { window.location.href = 'login.html'; return; }
+      await load();
+    }
+
+    async function load() {
+      const { data, error } = await sb
+        .from('vacantes_portal')
+        .select('*, empresas_portal(nombre_empresa, contacto_nombre, email)')
+        .order('created_at', { ascending: false });
+      if (error) { console.error(error); return; }
+      allVacantes = data || [];
+      document.getElementById('badgePendientes').textContent = allVacantes.filter(v => v.estado === 'pendiente').length;
+      document.getElementById('badgeAprobadas').textContent = allVacantes.filter(v => v.estado === 'aprobada').length;
+      document.getElementById('badgeRechazadas').textContent = allVacantes.filter(v => v.estado === 'rechazada').length;
+      render();
+    }
+
+    function switchTab(tab) {
+      activeTab = tab;
+      document.querySelectorAll('.tab-btn').forEach((b, i) => {
+        b.classList.toggle('active', (i===0&&tab==='pendientes')||(i===1&&tab==='aprobadas')||(i===2&&tab==='rechazadas'));
+      });
+      render();
+    }
+
+    function render() {
+      const list = allVacantes.filter(v => v.estado === activeTab);
+      const el = document.getElementById('lista');
+      if (!list.length) {
+        el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><p>No hay vacantes ${activeTab === 'pendientes' ? 'pendientes' : activeTab === 'aprobadas' ? 'aprobadas' : 'rechazadas'}.</p></div>`;
+        return;
+      }
+      el.innerHTML = list.map(v => {
+        const empresa = v.empresas_portal;
+        const fecha = new Date(v.created_at).toLocaleDateString('es-DO', { day: '2-digit', month: 'short', year: 'numeric' });
+        const salario = v.salario_min || v.salario_max
+          ? `RD$ ${v.salario_min ? Number(v.salario_min).toLocaleString() : '—'} – ${v.salario_max ? Number(v.salario_max).toLocaleString() : '—'}`
+          : 'Salario no especificado';
+        return `
+        <div class="vacante-card" id="vc-${v.id}">
+          <div class="vacante-header">
+            <div>
+              <div class="vacante-titulo">${v.titulo}</div>
+              <div class="vacante-empresa">${empresa?.nombre_empresa || '—'}</div>
+              <div class="vacante-meta">${v.sector || ''} · ${v.modalidad || ''} · ${v.ubicacion || ''} · ${salario} · ${fecha}</div>
+              ${empresa ? `<div class="vacante-meta" style="margin-top:4px;">Contacto: ${empresa.contacto_nombre || ''} · ${empresa.email || ''}</div>` : ''}
+            </div>
+            <span class="status-badge status-${v.estado}">${{pendiente:'En revisión',aprobada:'Aprobada',rechazada:'Rechazada'}[v.estado]||v.estado}</span>
+          </div>
+          ${v.descripcion ? `<div class="vacante-desc">${v.descripcion.substring(0,200)}${v.descripcion.length>200?'…':''}</div>` : ''}
+          <div class="vacante-actions">
+            ${v.estado === 'pendiente' ? `
+              <button class="btn-aprobar" onclick="aprobar('${v.id}')">✅ Aprobar y publicar</button>
+              <button class="btn-rechazar" onclick="rechazar('${v.id}')">✕ Rechazar</button>
+            ` : ''}
+            ${v.estado === 'aprobada' ? `
+              <button class="btn-apps" onclick="toggleApps('${v.id}')">👥 Ver aplicantes</button>
+              <button class="btn-despublicar" onclick="despublicar('${v.id}')">Despublicar</button>
+            ` : ''}
+            ${v.estado === 'rechazada' ? `
+              <button class="btn-aprobar" onclick="aprobar('${v.id}')">↩ Aprobar</button>
+            ` : ''}
+          </div>
+          <div class="apps-panel" id="apps-${v.id}">
+            <div id="apps-content-${v.id}"><p style="color:#666;font-size:13px;">Cargando aplicantes...</p></div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    async function aprobar(id) {
+      const { error } = await sb.from('vacantes_portal').update({ estado: 'aprobada' }).eq('id', id);
+      if (error) { showToast('Error al aprobar'); return; }
+      showToast('✅ Vacante aprobada y publicada');
+      await load();
+    }
+
+    async function rechazar(id) {
+      if (!confirm('¿Rechazar esta vacante?')) return;
+      const { error } = await sb.from('vacantes_portal').update({ estado: 'rechazada' }).eq('id', id);
+      if (error) { showToast('Error'); return; }
+      showToast('Vacante rechazada');
+      await load();
+    }
+
+    async function despublicar(id) {
+      const { error } = await sb.from('vacantes_portal').update({ estado: 'pendiente' }).eq('id', id);
+      if (error) { showToast('Error'); return; }
+      showToast('Vacante despublicada');
+      await load();
+    }
+
+    async function toggleApps(vacanteId) {
+      const panel = document.getElementById('apps-' + vacanteId);
+      const isOpen = panel.style.display === 'block';
+      panel.style.display = isOpen ? 'none' : 'block';
+      if (isOpen) return;
+
+      const { data, error } = await sb.from('aplicaciones_vacante')
+        .select('*').eq('vacante_id', vacanteId).order('created_at', { ascending: false });
+
+      const el = document.getElementById('apps-content-' + vacanteId);
+      if (error || !data?.length) {
+        el.innerHTML = '<p style="color:#666;font-size:13px;text-align:center;padding:1rem;">Aún no hay aplicantes para esta vacante.</p>';
+        return;
+      }
+
+      el.innerHTML = `<p style="font-size:12px;font-weight:700;color:#063958;margin-bottom:.8rem;text-transform:uppercase;letter-spacing:.5px;">${data.length} aplicante${data.length>1?'s':''}</p>` +
+        data.map(a => {
+          const fecha = new Date(a.created_at).toLocaleDateString('es-DO', { day:'2-digit', month:'short' });
+          return `
+          <div class="app-row">
+            <div style="flex:1;">
+              <div class="app-nombre">${a.nombre || ''} ${a.apellido || ''}</div>
+              <div class="app-info">
+                ✉ ${a.email || '—'}
+                ${a.telefono ? '· 📞 ' + a.telefono : ''}
+                ${a.experiencia ? '· ' + a.experiencia + ' años exp.' : ''}
+                ${a.salario_esperado ? '· RD$ ' + Number(a.salario_esperado).toLocaleString() : ''}
+                · ${fecha}
+              </div>
+              ${a.linkedin ? `<div class="app-info"><a href="${a.linkedin}" target="_blank" style="color:#0F6B9F;">LinkedIn</a></div>` : ''}
+              ${a.motivacion ? `<div class="app-motivacion">"${a.motivacion.substring(0,150)}${a.motivacion.length>150?'…':''}"</div>` : ''}
+            </div>
+            ${a.cv_url ? `<a href="${a.cv_url}" target="_blank" class="app-cv">📄 CV</a>` : '<span style="color:#aaa;font-size:11px;">Sin CV</span>'}
+          </div>`;
+        }).join('');
+    }
+
+    function logout() {
+      sb.auth.signOut().then(() => window.location.href = 'login.html');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    init();
+  </script>
+</body>
+</html>
