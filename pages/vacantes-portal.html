@@ -128,7 +128,8 @@
     }
 
     function render() {
-      const list = allVacantes.filter(v => v.estado === activeTab);
+      const estadoMap = { pendientes: 'pendiente', aprobadas: 'aprobada', rechazadas: 'rechazada' };
+      const list = allVacantes.filter(v => v.estado === estadoMap[activeTab]);
       const el = document.getElementById('lista');
       if (!list.length) {
         el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><p>No hay vacantes ${activeTab === 'pendientes' ? 'pendientes' : activeTab === 'aprobadas' ? 'aprobadas' : 'rechazadas'}.</p></div>`;
