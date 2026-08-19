@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Candidatos â€” We Recruit DR</title>
+  <title>Candidatos — We Recruit DR</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -244,7 +244,7 @@
     }
     .form-full { grid-column: 1 / -1; }
 
-    /* EVALUACIÃ“N */
+    /* EVALUACIÓN */
     .eval-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -311,9 +311,9 @@
       <input type="text" class="search-input" id="searchInput" placeholder="Buscar por nombre, email o carrera..." oninput="filterCandidates()">
       <select class="filter-select" id="filterStars" onchange="filterCandidates()">
         <option value="">Todas las puntuaciones</option>
-        <option value="5">â­â­â­â­â­ (5)</option>
-        <option value="4">â­â­â­â­ (4+)</option>
-        <option value="3">â­â­â­ (3+)</option>
+        <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+        <option value="4">⭐⭐⭐⭐ (4+)</option>
+        <option value="3">⭐⭐⭐ (3+)</option>
       </select>
     </div>
 
@@ -325,7 +325,7 @@
             <th>Vacante aplicada</th>
             <th>Carrera / Ciudad</th>
             <th>Salario esperado</th>
-            <th>PuntuaciÃ³n</th>
+            <th>Puntuación</th>
             <th>Fuente</th>
             <th>Fecha</th>
             <th>CV</th>
@@ -336,8 +336,8 @@
         </tbody>
       </table>
       <div class="empty-state" id="emptyState" style="display:none;">
-        <p style="font-size:32px;">ðŸ‘¤</p>
-        <p>No hay candidatos todavÃ­a. Agrega tu primer candidato.</p>
+        <p style="font-size:32px;">👤</p>
+        <p>No hay candidatos todavía. Agrega tu primer candidato.</p>
       </div>
     </div>
   </div>
@@ -349,7 +349,7 @@
       <form id="candidateForm" onsubmit="saveCandidate(event)">
         <input type="hidden" id="candidateId">
         <div class="form-group" id="vacanteAplicadaGroup" style="display:none;">
-          <label style="color:#0369a1;">Vacante aplicada (portal pÃºblico)</label>
+          <label style="color:#0369a1;">Vacante aplicada (portal público)</label>
           <input type="text" id="f_vacante_aplicada" readonly style="background:#f0f9ff;color:#0369a1;border-color:#bae6fd;">
         </div>
 
@@ -369,7 +369,7 @@
             <input type="email" id="f_email">
           </div>
           <div class="form-group">
-            <label>TelÃ©fono</label>
+            <label>Teléfono</label>
             <input type="text" id="f_telefono">
           </div>
         </div>
@@ -389,8 +389,8 @@
             <input type="text" id="f_carrera">
           </div>
           <div class="form-group">
-            <label>AÃ±os de experiencia</label>
-            <input type="text" id="f_anos_experiencia" placeholder="Ej: 2-5 aÃ±os">
+            <label>Años de experiencia</label>
+            <input type="text" id="f_anos_experiencia" placeholder="Ej: 2-5 años">
           </div>
         </div>
         <div class="form-row">
@@ -405,13 +405,13 @@
         </div>
 
         <div class="form-group">
-          <label>PuntuaciÃ³n general</label>
+          <label>Puntuación general</label>
           <div class="star-input" id="starInput">
-            <span data-v="1" onclick="setStars(1)">â˜…</span>
-            <span data-v="2" onclick="setStars(2)">â˜…</span>
-            <span data-v="3" onclick="setStars(3)">â˜…</span>
-            <span data-v="4" onclick="setStars(4)">â˜…</span>
-            <span data-v="5" onclick="setStars(5)">â˜…</span>
+            <span data-v="1" onclick="setStars(1)">★</span>
+            <span data-v="2" onclick="setStars(2)">★</span>
+            <span data-v="3" onclick="setStars(3)">★</span>
+            <span data-v="4" onclick="setStars(4)">★</span>
+            <span data-v="5" onclick="setStars(5)">★</span>
           </div>
           <input type="hidden" id="f_estrellas">
         </div>
@@ -425,31 +425,31 @@
           <label>CV (PDF)</label>
           <input type="file" id="f_cv" accept=".pdf,.doc,.docx">
           <div id="cvLinkModal" style="display:none;margin-top:6px;">
-            <a id="cvLinkAnchorModal" href="#" target="_blank" style="font-size:13px;color:#0F6B9F;font-weight:600;">ðŸ“„ Ver CV actual â†’</a>
+            <a id="cvLinkAnchorModal" href="#" target="_blank" style="font-size:13px;color:#0F6B9F;font-weight:600;">📄 Ver CV actual →</a>
           </div>
         </div>
 
-        <h3 style="font-size:15px; color:#063958; margin:20px 0 12px;">EvaluaciÃ³n por criterios</h3>
+        <h3 style="font-size:15px; color:#063958; margin:20px 0 12px;">Evaluación por criterios</h3>
         <div class="eval-grid">
           <div class="eval-item">
             <label>Experiencia</label>
-            <select id="f_experiencia"><option value="">â€”</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+            <select id="f_experiencia"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
           </div>
           <div class="eval-item">
             <label>Actitud</label>
-            <select id="f_actitud"><option value="">â€”</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+            <select id="f_actitud"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
           </div>
           <div class="eval-item">
-            <label>PresentaciÃ³n</label>
-            <select id="f_presentacion"><option value="">â€”</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+            <label>Presentación</label>
+            <select id="f_presentacion"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
           </div>
           <div class="eval-item">
             <label>Referencias</label>
-            <select id="f_referencias"><option value="">â€”</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+            <select id="f_referencias"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
           </div>
           <div class="eval-item">
-            <label>ComunicaciÃ³n</label>
-            <select id="f_comunicacion"><option value="">â€”</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+            <label>Comunicación</label>
+            <select id="f_comunicacion"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
           </div>
         </div>
 
@@ -477,7 +477,6 @@
     let allCandidates = [];
     let currentStars = 0;
 
-    // Auth check
     let initialized = false;
     sb.auth.onAuthStateChange((event, session) => {
       if (!session) {
@@ -493,7 +492,6 @@
       window.location.href = 'login.html';
     }
 
-    // ---- CARGAR CANDIDATOS ----
     async function loadCandidates() {
       const { data, error } = await sb
         .from('candidatos')
@@ -537,15 +535,15 @@
         const stars = renderStars(c.puntuacion_estrellas);
         const salario = c.salario_esperado
           ? `RD$ ${Number(c.salario_esperado).toLocaleString()}`
-          : (c.salario_esperado_dop ? `RD$ ${c.salario_esperado_dop}` : 'â€”');
+          : (c.salario_esperado_dop ? `RD$ ${c.salario_esperado_dop}` : '—');
         const fecha = c.created_at ? new Date(c.created_at).toLocaleDateString('es-DO') : '';
-        const disc = c.resultado_disc ? `<span class="badge badge-disc">${c.resultado_disc}</span>` : 'â€”';
-        const carreraLinea = [c.carrera, c.ciudad].filter(Boolean).join(' Â· ') || 'â€”';
-        const fuente = c.fuente ? `<span class="badge badge-portal">${c.fuente}</span>` : 'â€”';
+        const disc = c.resultado_disc ? `<span class="badge badge-disc">${c.resultado_disc}</span>` : '—';
+        const carreraLinea = [c.carrera, c.ciudad].filter(Boolean).join(' · ') || '—';
+        const fuente = c.fuente ? `<span class="badge badge-portal">${c.fuente}</span>` : '—';
 
         const vacante = c.vacante_aplicada
           ? `<span style="font-size:13px;color:#063958;">${c.vacante_aplicada}</span>`
-          : '<span style="color:#bbb;">â€”</span>';
+          : '<span style="color:#bbb;">—</span>';
 
         return `<tr>
           <td>
@@ -564,7 +562,7 @@
           <td>${fuente}</td>
           <td style="font-size:13px;color:#888;">${fecha}</td>
           <td>
-            ${c.cv_url ? `<a href="${c.cv_url}" target="_blank" class="link" style="display:inline-flex;align-items:center;gap:4px;">ðŸ“„ CV</a>` : '<span style="color:#bbb;font-size:12px;">â€”</span>'}
+            ${c.cv_url ? `<a href="${c.cv_url}" target="_blank" class="link" style="display:inline-flex;align-items:center;gap:4px;">📄 CV</a>` : '<span style="color:#bbb;font-size:12px;">—</span>'}
           </td>
           <td><a class="link" onclick="editCandidate('${c.id}')">Editar</a></td>
         </tr>`;
@@ -572,13 +570,12 @@
     }
 
     function renderStars(n) {
-      if (!n) return '<span class="empty">â˜†â˜†â˜†â˜†â˜†</span>';
+      if (!n) return '<span class="empty">☆☆☆☆☆</span>';
       let s = '';
-      for (let i = 1; i <= 5; i++) s += i <= n ? 'â˜…' : '<span class="empty">â˜†</span>';
+      for (let i = 1; i <= 5; i++) s += i <= n ? '★' : '<span class="empty">☆</span>';
       return s;
     }
 
-    // ---- MODAL ----
     function openModal(candidate = null) {
       document.getElementById('modal').classList.add('active');
       document.getElementById('candidateForm').reset();
@@ -596,7 +593,6 @@
         } else {
           vacanteGroup.style.display = 'none';
         }
-        // Mostrar link al CV si existe
         const cvLink = document.getElementById('cvLinkModal');
         const cvAnchor = document.getElementById('cvLinkAnchorModal');
         if (candidate.cv_url) {
@@ -622,7 +618,6 @@
           document.getElementById('f_estrellas').value = currentStars;
           updateStarDisplay();
         }
-        // Cargar evaluaciÃ³n
         loadEvaluation(candidate.id);
       } else {
         document.getElementById('modalTitle').textContent = 'Nuevo candidato';
@@ -670,7 +665,6 @@
       if (c) openModal(c);
     }
 
-    // ---- GUARDAR ----
     async function saveCandidate(e) {
       e.preventDefault();
       const btn = document.getElementById('saveBtn');
@@ -696,7 +690,6 @@
       try {
         let candidateId = id;
 
-        // Subir foto si hay
         const fotoFile = document.getElementById('f_foto').files[0];
         if (fotoFile) {
           const ext = fotoFile.name.split('.').pop();
@@ -708,7 +701,6 @@
           }
         }
 
-        // Subir CV si hay
         const cvFile = document.getElementById('f_cv').files[0];
         if (cvFile) {
           const ext = cvFile.name.split('.').pop();
@@ -729,7 +721,6 @@
           candidateId = data[0].id;
         }
 
-        // Guardar evaluaciÃ³n
         const evalData = {
           candidato_id: candidateId,
           experiencia: document.getElementById('f_experiencia').value || null,
@@ -741,7 +732,6 @@
 
         const hasEval = Object.values(evalData).some((v, i) => i > 0 && v);
         if (hasEval) {
-          // Borrar evaluaciÃ³n anterior si existe
           await sb.from('evaluaciones_candidato').delete().eq('candidato_id', candidateId);
           await sb.from('evaluaciones_candidato').insert(evalData);
         }
@@ -760,7 +750,7 @@
     async function deleteCandidate() {
       const id = document.getElementById('candidateId').value;
       if (!id) return;
-      if (!confirm('Â¿Eliminar este candidato? Esta acciÃ³n no se puede deshacer.')) return;
+      if (!confirm('¿Eliminar este candidato? Esta acción no se puede deshacer.')) return;
 
       const { error } = await sb.from('candidatos').delete().eq('id', id);
       if (error) { alert('Error: ' + error.message); return; }
@@ -777,7 +767,6 @@
       setTimeout(() => t.classList.remove('show'), 3000);
     }
 
-    // Cerrar modal con Escape
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeModal();
     });
@@ -787,4 +776,3 @@
   </script>
 </body>
 </html>
-

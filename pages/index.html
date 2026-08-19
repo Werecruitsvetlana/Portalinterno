@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard â€” We Recruit DR</title>
+  <title>Dashboard — We Recruit DR</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -172,7 +172,7 @@
 
     .empty-msg { font-size: 13px; color: #999; padding: 20px 0; text-align: center; }
 
-    /* FACTURACIÃ“N TABLE */
+    /* FACTURACIÓN TABLE */
     .fact-table { width: 100%; border-collapse: collapse; }
     .fact-table th {
       text-align: left; padding: 8px 12px; font-size: 11px; font-weight: 600;
@@ -195,8 +195,8 @@
 <body>
   <nav class="sidebar">
     <div class="sidebar-logo">We Recruit DR</div>
-    <a href="index.html">📊 Dashboard</a>
-    <a href="index.html" class="active">👤 Candidatos</a>
+    <a href="index.html" class="active">📊 Dashboard</a>
+    <a href="candidatos.html">👤 Candidatos</a>
     <a href="posiciones.html">💼 Posiciones</a>
     <a href="ternas.html">📋 Ternas</a>
     <a href="empresas.html">🏢 Empresas</a>
@@ -216,37 +216,37 @@
     <div class="kpi-grid">
       <div class="kpi-card highlight">
         <div class="kpi-label">Posiciones totales</div>
-        <div class="kpi-value" id="kpiPosTotal">â€”</div>
+        <div class="kpi-value" id="kpiPosTotal">—</div>
         <div class="kpi-sub" id="kpiPosAbiertas"></div>
       </div>
       <div class="kpi-card success">
         <div class="kpi-label">Clientes totales</div>
-        <div class="kpi-value" id="kpiClientes">â€”</div>
+        <div class="kpi-value" id="kpiClientes">—</div>
         <div class="kpi-sub" id="kpiClientesSub"></div>
       </div>
       <div class="kpi-card warning">
         <div class="kpi-label">Candidatos</div>
-        <div class="kpi-value" id="kpiCandidatos">â€”</div>
+        <div class="kpi-value" id="kpiCandidatos">—</div>
         <div class="kpi-sub" id="kpiCandidatosSub"></div>
       </div>
       <div class="kpi-card info">
         <div class="kpi-label">Colocaciones</div>
-        <div class="kpi-value" id="kpiColocaciones">â€”</div>
+        <div class="kpi-value" id="kpiColocaciones">—</div>
         <div class="kpi-sub" id="kpiColocacionesSub"></div>
       </div>
       <div class="kpi-card danger">
-        <div class="kpi-label">FacturaciÃ³n pendiente</div>
-        <div class="kpi-value" id="kpiFactMonto">â€”</div>
+        <div class="kpi-label">Facturación pendiente</div>
+        <div class="kpi-value" id="kpiFactMonto">—</div>
         <div class="kpi-sub" id="kpiFactCant"></div>
       </div>
       <div class="kpi-card" style="border-left: 4px solid #063958;">
-        <div class="kpi-label">FacturaciÃ³n cobrada</div>
-        <div class="kpi-value" id="kpiFactCobrada">â€”</div>
+        <div class="kpi-label">Facturación cobrada</div>
+        <div class="kpi-value" id="kpiFactCobrada">—</div>
         <div class="kpi-sub" id="kpiFactCobradaSub"></div>
       </div>
     </div>
 
-    <!-- GrÃ¡fico de posiciones por mes + Facturas pendientes -->
+    <!-- Gráfico de posiciones por mes + Facturas pendientes -->
     <div class="grid-2">
       <div class="section">
         <div class="section-header">
@@ -259,7 +259,7 @@
 
       <div class="section">
         <div class="section-header">
-          <span class="section-title">FacturaciÃ³n por mes</span>
+          <span class="section-title">Facturación por mes</span>
         </div>
         <div id="chartFacturacion">
           <div class="empty-msg">Cargando...</div>
@@ -272,7 +272,7 @@
       <div class="section">
         <div class="section-header">
           <span class="section-title">Posiciones abiertas</span>
-          <a href="posiciones.html" class="section-link">Ver todas â†’</a>
+          <a href="posiciones.html" class="section-link">Ver todas →</a>
         </div>
         <div id="openPositions">
           <div class="empty-msg">Cargando...</div>
@@ -295,7 +295,7 @@
       <div class="section">
         <div class="section-header">
           <span class="section-title">Candidatos recientes</span>
-          <a href="candidatos.html" class="section-link">Ver todos â†’</a>
+          <a href="candidatos.html" class="section-link">Ver todos →</a>
         </div>
         <div id="recentCandidates">
           <div class="empty-msg">Cargando...</div>
@@ -305,8 +305,8 @@
       <!-- Top clientes -->
       <div class="section">
         <div class="section-header">
-          <span class="section-title">Clientes con mÃ¡s posiciones</span>
-          <a href="empresas.html" class="section-link">Ver todos â†’</a>
+          <span class="section-title">Clientes con más posiciones</span>
+          <a href="empresas.html" class="section-link">Ver todos →</a>
         </div>
         <div id="topClientes">
           <div class="empty-msg">Cargando...</div>
@@ -347,7 +347,7 @@
 
     function setGreeting() {
       const h = new Date().getHours();
-      let saludo = 'Buenos dÃ­as';
+      let saludo = 'Buenos días';
       if (h >= 12 && h < 18) saludo = 'Buenas tardes';
       else if (h >= 18) saludo = 'Buenas noches';
       document.getElementById('greeting').textContent = `${saludo}, Svetlana.`;
@@ -444,7 +444,7 @@
 
       document.getElementById('kpiColocaciones').textContent = colocData.length;
       const colocMes = colocData.filter(c => new Date(c.updated_at) >= new Date(firstOfMonth));
-      document.getElementById('kpiColocacionesSub').textContent = colocMes.length > 0 ? `${colocMes.length} este mes` : 'total histÃ³rico';
+      document.getElementById('kpiColocacionesSub').textContent = colocMes.length > 0 ? `${colocMes.length} este mes` : 'total histórico';
 
       const totalPend = factPendData.reduce((s, f) => s + (Number(f.monto) || 0), 0);
       document.getElementById('kpiFactMonto').textContent = totalPend > 0 ? formatRD(totalPend) : 'RD$ 0';
@@ -454,9 +454,9 @@
       document.getElementById('kpiFactCobrada').textContent = formatRD(totalCob);
       const cobMes = factCobData.filter(f => f.fecha_cobro && new Date(f.fecha_cobro) >= new Date(firstOfMonth));
       const cobMesTotal = cobMes.reduce((s, f) => s + (Number(f.monto) || 0), 0);
-      document.getElementById('kpiFactCobradaSub').textContent = cobMesTotal > 0 ? `${formatRD(cobMesTotal)} este mes` : 'total histÃ³rico';
+      document.getElementById('kpiFactCobradaSub').textContent = cobMesTotal > 0 ? `${formatRD(cobMesTotal)} este mes` : 'total histórico';
 
-      // ===== GRÃFICO: Posiciones por mes =====
+      // ===== GRÁFICO: Posiciones por mes =====
       const months = getLast6Months();
       const posByMonth = months.map(m => posData.filter(p => {
         const d = new Date(p.created_at);
@@ -464,7 +464,7 @@
       }).length);
       renderBarChart('chartPositions', months, posByMonth, '#0F6B9F', false);
 
-      // ===== GRÃFICO: FacturaciÃ³n por mes =====
+      // ===== GRÁFICO: Facturación por mes =====
       const factByMonth = months.map(m => factAllData.filter(f => {
         const d = new Date(f.fecha_emision || f.created_at);
         return d.getMonth() === m.month && d.getFullYear() === m.year;
@@ -483,7 +483,7 @@
           return `<div class="list-item">
             <div>
               <div class="list-item-title">${p.titulo}</div>
-              <div class="list-item-sub">${p.empresas?.nombre || 'Sin empresa'}${p.salario_ofrecido ? ' Â· ' + formatRD(p.salario_ofrecido) : ''}</div>
+              <div class="list-item-sub">${p.empresas?.nombre || 'Sin empresa'}${p.salario_ofrecido ? ' · ' + formatRD(p.salario_ofrecido) : ''}</div>
             </div>
             <span class="badge ${badgeClass}">${estadoLabel}</span>
           </div>`;
@@ -497,14 +497,14 @@
       } else {
         const today = new Date();
         invEl.innerHTML = `<table class="fact-table">
-          <thead><tr><th>Empresa</th><th>Monto</th><th>DÃ­as</th></tr></thead>
+          <thead><tr><th>Empresa</th><th>Monto</th><th>Días</th></tr></thead>
           <tbody>${factPendData.slice(0, 8).map(f => {
             const venc = f.fecha_vencimiento ? new Date(f.fecha_vencimiento + 'T00:00:00') : null;
             const dias = venc ? Math.floor((today - venc) / 86400000) : 0;
             const moraClass = dias <= 0 ? 'mora-ok' : dias <= 30 ? 'mora-warn' : 'mora-danger';
-            const diasText = dias <= 0 ? 'Al dÃ­a' : `${dias}d mora`;
+            const diasText = dias <= 0 ? 'Al día' : `${dias}d mora`;
             return `<tr>
-              <td>${f.empresas?.nombre || 'â€”'}</td>
+              <td>${f.empresas?.nombre || '—'}</td>
               <td class="monto">${formatRD(f.monto)}</td>
               <td><span class="dias-mora ${moraClass}">${diasText}</span></td>
             </tr>`;
@@ -521,13 +521,13 @@
         recentEl.innerHTML = recent.map(c => {
           const initials = (c.nombre || '??').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
           const avatarContent = c.foto_url ? `<img src="${c.foto_url}" alt="">` : initials;
-          const stars = c.puntuacion_estrellas ? 'â˜…'.repeat(c.puntuacion_estrellas) : '';
+          const stars = c.puntuacion_estrellas ? '★'.repeat(c.puntuacion_estrellas) : '';
           return `<div class="list-item">
             <div class="avatar-row">
               <div class="avatar-sm">${avatarContent}</div>
               <div>
                 <div class="list-item-title">${c.nombre}</div>
-                <div class="list-item-sub">${c.carrera || 'Sin carrera'}${c.salario_esperado ? ' Â· ' + formatRD(c.salario_esperado) : ''}</div>
+                <div class="list-item-sub">${c.carrera || 'Sin carrera'}${c.salario_esperado ? ' · ' + formatRD(c.salario_esperado) : ''}</div>
               </div>
             </div>
             <span class="stars">${stars}</span>
@@ -566,18 +566,18 @@
         const estadoLabels = {
           identificado: 'fue identificado para',
           enviado: 'fue enviado a',
-          en_entrevista: 'estÃ¡ en entrevista para',
+          en_entrevista: 'está en entrevista para',
           aprobado: 'fue aprobado para',
           contratado: 'fue contratado en',
           rechazado: 'fue rechazado en',
-          disponible: 'quedÃ³ disponible de'
+          disponible: 'quedó disponible de'
         };
         actEl.innerHTML = cpData.map(cp => {
           const when = new Date(cp.updated_at).toLocaleDateString('es-DO');
           const action = estadoLabels[cp.estado] || cp.estado;
           return `<div class="list-item">
             <div>
-              <div class="list-item-title">${cp.candidatos?.nombre || 'Candidato'} ${action} ${cp.posiciones?.titulo || 'posiciÃ³n'}</div>
+              <div class="list-item-title">${cp.candidatos?.nombre || 'Candidato'} ${action} ${cp.posiciones?.titulo || 'posición'}</div>
               <div class="list-item-sub">${when}</div>
             </div>
           </div>`;
@@ -587,4 +587,3 @@
   </script>
 </body>
 </html>
-

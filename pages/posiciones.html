@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Posiciones â€” We Recruit DR</title>
+  <title>Posiciones — We Recruit DR</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -117,7 +117,7 @@
     .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
     .form-full { grid-column: 1 / -1; }
 
-    /* CANDIDATOS EN POSICIÃ“N */
+    /* CANDIDATOS EN POSICIÓN */
     .section-title { font-size: 15px; font-weight: 600; color: #063958; margin: 20px 0 12px; }
     .assigned-list { margin-bottom: 16px; }
     .assigned-item {
@@ -142,8 +142,8 @@
   <nav class="sidebar">
     <div class="sidebar-logo">We Recruit DR</div>
     <a href="index.html">📊 Dashboard</a>
-    <a href="posiciones.html" class="active">👤 Candidatos</a>
-    <a href="posiciones.html">💼 Posiciones</a>
+    <a href="candidatos.html">👤 Candidatos</a>
+    <a href="posiciones.html" class="active">💼 Posiciones</a>
     <a href="ternas.html">📋 Ternas</a>
     <a href="empresas.html">🏢 Empresas</a>
     <a href="freelancers.html">🎨 Freelancers</a>
@@ -155,11 +155,11 @@
   <div class="main">
     <div class="page-header">
       <h1>Posiciones</h1>
-      <button class="btn btn-primary" onclick="openModal()">+ Nueva posiciÃ³n</button>
+      <button class="btn btn-primary" onclick="openModal()">+ Nueva posición</button>
     </div>
 
     <div class="controls">
-      <input type="text" class="search-input" id="searchInput" placeholder="Buscar por tÃ­tulo o empresa..." oninput="filterPositions()">
+      <input type="text" class="search-input" id="searchInput" placeholder="Buscar por título o empresa..." oninput="filterPositions()">
       <select class="filter-select" id="filterEstado" onchange="filterPositions()">
         <option value="">Todos los estados</option>
         <option value="abierta">Abierta</option>
@@ -171,21 +171,21 @@
 
     <div class="positions-grid" id="positionsGrid"></div>
     <div class="empty-state" id="emptyState" style="display:none;">
-      <p style="font-size:32px;">ðŸ’¼</p>
-      <p>No hay posiciones todavÃ­a. Crea tu primera posiciÃ³n.</p>
+      <p style="font-size:32px;">💼</p>
+      <p>No hay posiciones todavía. Crea tu primera posición.</p>
     </div>
   </div>
 
   <!-- MODAL -->
   <div class="modal-overlay" id="modal">
     <div class="modal">
-      <h2 id="modalTitle">Nueva posiciÃ³n</h2>
+      <h2 id="modalTitle">Nueva posición</h2>
       <form id="positionForm" onsubmit="savePosition(event)">
         <input type="hidden" id="positionId">
 
         <div class="form-row">
           <div class="form-group">
-            <label>TÃ­tulo del puesto *</label>
+            <label>Título del puesto *</label>
             <input type="text" id="f_titulo" required>
           </div>
           <div class="form-group">
@@ -198,11 +198,11 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label>Tipo de posiciÃ³n</label>
+            <label>Tipo de posición</label>
             <select id="f_tipo">
               <option value="Presencial">Presencial</option>
               <option value="Remoto">Remoto</option>
-              <option value="HÃ­brido">HÃ­brido</option>
+              <option value="Híbrido">Híbrido</option>
               <option value="Freelance">Freelance</option>
             </select>
           </div>
@@ -210,7 +210,7 @@
             <label>Sector</label>
             <select id="f_sector">
               <option value="">Sin especificar</option>
-              <option value="TecnologÃ­a">TecnologÃ­a</option>
+              <option value="Tecnología">Tecnología</option>
               <option value="Finanzas">Finanzas</option>
               <option value="Marketing">Marketing</option>
               <option value="Operaciones">Operaciones</option>
@@ -218,7 +218,7 @@
               <option value="Salud">Salud</option>
               <option value="Legal">Legal</option>
               <option value="Ventas">Ventas</option>
-              <option value="EducaciÃ³n">EducaciÃ³n</option>
+              <option value="Educación">Educación</option>
               <option value="Otro">Otro</option>
             </select>
           </div>
@@ -230,7 +230,7 @@
             <input type="text" id="f_departamento">
           </div>
           <div class="form-group">
-            <label>UbicaciÃ³n</label>
+            <label>Ubicación</label>
             <input type="text" id="f_ubicacion">
           </div>
         </div>
@@ -257,7 +257,7 @@
             <input type="date" id="f_fecha_apertura">
           </div>
           <div class="form-group">
-            <label>Fecha lÃ­mite</label>
+            <label>Fecha límite</label>
             <input type="date" id="f_fecha_limite">
           </div>
         </div>
@@ -269,10 +269,10 @@
 
         <div class="form-group">
           <label>Notas</label>
-          <textarea id="f_notas" placeholder="Notas internas sobre esta posiciÃ³n..."></textarea>
+          <textarea id="f_notas" placeholder="Notas internas sobre esta posición..."></textarea>
         </div>
 
-        <!-- Candidatos asignados (solo en ediciÃ³n) -->
+        <!-- Candidatos asignados (solo en edición) -->
         <div id="candidatesSection" style="display:none;">
           <h3 class="section-title">Candidatos asignados</h3>
           <div class="assigned-list" id="assignedList"></div>
@@ -382,15 +382,15 @@
 
         return `<div class="pos-card estado-${p.estado}" onclick="editPosition('${p.id}')">
           <div class="pos-title">${p.titulo}</div>
-          <div class="pos-empresa">ðŸ¢ ${empresa}</div>
+          <div class="pos-empresa">🏢 ${empresa}</div>
           <div class="pos-details">
             <span class="pos-detail"><strong>Salario:</strong> ${salario}</span>
-            ${p.ubicacion ? `<span class="pos-detail"><strong>UbicaciÃ³n:</strong> ${p.ubicacion}</span>` : ''}
+            ${p.ubicacion ? `<span class="pos-detail"><strong>Ubicación:</strong> ${p.ubicacion}</span>` : ''}
             ${p.departamento ? `<span class="pos-detail"><strong>Depto:</strong> ${p.departamento}</span>` : ''}
           </div>
           <div class="pos-footer">
             <span class="badge badge-${p.estado}">${estadoLabels[p.estado] || p.estado}</span>
-            <span class="pos-date">${fecha}${limite ? ' â†’ ' + limite : ''}</span>
+            <span class="pos-date">${fecha}${limite ? ' → ' + limite : ''}</span>
           </div>
         </div>`;
       }).join('');
@@ -401,13 +401,12 @@
       document.getElementById('modal').classList.add('active');
       document.getElementById('positionForm').reset();
 
-      // Poblar select de empresas
       const sel = document.getElementById('f_empresa');
       sel.innerHTML = '<option value="">Seleccionar empresa...</option>' +
         allEmpresas.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
 
       if (position) {
-        document.getElementById('modalTitle').textContent = 'Editar posiciÃ³n';
+        document.getElementById('modalTitle').textContent = 'Editar posición';
         document.getElementById('deleteBtn').style.display = 'inline-block';
         document.getElementById('positionId').value = position.id;
         document.getElementById('f_titulo').value = position.titulo || '';
@@ -423,11 +422,10 @@
         document.getElementById('f_requisitos').value = position.requisitos || '';
         document.getElementById('f_notas').value = position.notas || '';
 
-        // Mostrar secciÃ³n de candidatos
         document.getElementById('candidatesSection').style.display = 'block';
         loadAssignedCandidates(position.id);
       } else {
-        document.getElementById('modalTitle').textContent = 'Nueva posiciÃ³n';
+        document.getElementById('modalTitle').textContent = 'Nueva posición';
         document.getElementById('deleteBtn').style.display = 'none';
         document.getElementById('positionId').value = '';
         document.getElementById('candidatesSection').style.display = 'none';
@@ -453,7 +451,7 @@
       const labels = { identificado: 'Identificado', enviado: 'Enviado', en_entrevista: 'En entrevista', aprobado: 'Aprobado', contratado: 'Contratado', rechazado: 'Rechazado', disponible: 'Disponible' };
 
       if (!data || data.length === 0) {
-        list.innerHTML = '<p style="font-size:13px;color:#888;padding:8px 0;">No hay candidatos asignados todavÃ­a.</p>';
+        list.innerHTML = '<p style="font-size:13px;color:#888;padding:8px 0;">No hay candidatos asignados todavía.</p>';
       } else {
         list.innerHTML = data.map(cp => `<div class="assigned-item">
           <span>${cp.candidatos?.nombre || 'Sin nombre'}</span>
@@ -463,7 +461,6 @@
         </div>`).join('');
       }
 
-      // Poblar select de candidatos disponibles
       const assignedIds = (data || []).map(cp => cp.candidato_id);
       const available = allCandidatos.filter(c => !assignedIds.includes(c.id));
       const addSel = document.getElementById('addCandidateSelect');
@@ -526,7 +523,7 @@
 
         closeModal();
         await loadPositions();
-        showToast(id ? 'PosiciÃ³n actualizada' : 'PosiciÃ³n creada');
+        showToast(id ? 'Posición actualizada' : 'Posición creada');
       } catch (err) {
         alert('Error: ' + err.message);
       }
@@ -538,14 +535,14 @@
     async function deletePosition() {
       const id = document.getElementById('positionId').value;
       if (!id) return;
-      if (!confirm('Â¿Eliminar esta posiciÃ³n? Se eliminarÃ¡n tambiÃ©n los candidatos asignados.')) return;
+      if (!confirm('¿Eliminar esta posición? Se eliminarán también los candidatos asignados.')) return;
 
       const { error } = await sb.from('posiciones').delete().eq('id', id);
       if (error) { alert('Error: ' + error.message); return; }
 
       closeModal();
       await loadPositions();
-      showToast('PosiciÃ³n eliminada');
+      showToast('Posición eliminada');
     }
 
     function showToast(msg) {
@@ -560,4 +557,3 @@
   </script>
 </body>
 </html>
-
