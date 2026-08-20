@@ -307,8 +307,48 @@
       <button class="btn btn-primary" onclick="openModal()">+ Nuevo candidato</button>
     </div>
 
+    <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
+      <div style="background:#fff;border-radius:10px;padding:14px 18px;box-shadow:0 1px 3px rgba(0,0,0,0.06);display:flex;align-items:center;gap:8px;">
+        <span style="font-size:22px;font-weight:700;color:#063958;" id="totalCount">0</span>
+        <span style="font-size:12px;color:#888;">candidatos en banco</span>
+      </div>
+      <div id="deptChips" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+    </div>
+
     <div class="controls">
-      <input type="text" class="search-input" id="searchInput" placeholder="Buscar por nombre, email o carrera..." oninput="filterCandidates()">
+      <input type="text" class="search-input" id="searchInput" placeholder="Buscar por nombre, email, carrera o departamento..." oninput="filterCandidates()">
+      <select class="filter-select" id="filterDept" onchange="filterCandidates()">
+        <option value="">Todos los departamentos</option>
+        <option>Ventas</option>
+        <option>Contabilidad / Finanzas</option>
+        <option>IT / Tecnología</option>
+        <option>Marketing</option>
+        <option>Recursos Humanos</option>
+        <option>Operaciones</option>
+        <option>Legal</option>
+        <option>Administración</option>
+        <option>Ingeniería</option>
+        <option>Servicio al Cliente</option>
+        <option>Logística</option>
+        <option>Salud</option>
+        <option>Educación</option>
+        <option>Otro</option>
+      </select>
+      <select class="filter-select" id="filterNivel" onchange="filterCandidates()">
+        <option value="">Todos los niveles</option>
+        <option value="junior">Junior</option>
+        <option value="mid">Mid</option>
+        <option value="senior">Senior</option>
+        <option value="gerencial">Gerencial</option>
+      </select>
+      <select class="filter-select" id="filterFuente" onchange="filterCandidates()">
+        <option value="">Todas las fuentes</option>
+        <option value="email">Email</option>
+        <option value="linkedin">LinkedIn</option>
+        <option value="referido">Referido</option>
+        <option value="portal">Portal</option>
+        <option value="otro">Otro</option>
+      </select>
       <select class="filter-select" id="filterStars" onchange="filterCandidates()">
         <option value="">Todas las puntuaciones</option>
         <option value="5">⭐⭐⭐⭐⭐ (5)</option>
@@ -322,12 +362,12 @@
         <thead>
           <tr>
             <th>Candidato</th>
-            <th>Vacante aplicada</th>
+            <th>Departamento</th>
+            <th>Nivel</th>
             <th>Carrera / Ciudad</th>
             <th>Salario esperado</th>
             <th>Puntuación</th>
             <th>Fuente</th>
-            <th>Fecha</th>
             <th>CV</th>
             <th></th>
           </tr>
@@ -395,13 +435,59 @@
         </div>
         <div class="form-row">
           <div class="form-group">
+            <label>Departamento / Área</label>
+            <select id="f_departamento">
+              <option value="">Seleccionar...</option>
+              <option>Ventas</option>
+              <option>Contabilidad / Finanzas</option>
+              <option>IT / Tecnología</option>
+              <option>Marketing</option>
+              <option>Recursos Humanos</option>
+              <option>Operaciones</option>
+              <option>Legal</option>
+              <option>Administración</option>
+              <option>Ingeniería</option>
+              <option>Servicio al Cliente</option>
+              <option>Logística</option>
+              <option>Salud</option>
+              <option>Educación</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Nivel</label>
+            <select id="f_nivel">
+              <option value="">Seleccionar...</option>
+              <option value="junior">Junior</option>
+              <option value="mid">Mid</option>
+              <option value="senior">Senior</option>
+              <option value="gerencial">Gerencial</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Fuente</label>
+            <select id="f_fuente">
+              <option value="">Seleccionar...</option>
+              <option value="email">Email</option>
+              <option value="linkedin">LinkedIn</option>
+              <option value="referido">Referido</option>
+              <option value="portal">Portal</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div class="form-group">
             <label>Salario esperado (RD$)</label>
             <input type="number" id="f_salario" min="0" step="1000">
           </div>
+        </div>
+        <div class="form-row">
           <div class="form-group">
             <label>Resultado DISC</label>
             <input type="text" id="f_disc" placeholder="Ej: D alto, I medio">
           </div>
+          <div class="form-group"></div>
         </div>
 
         <div class="form-group">
@@ -501,20 +587,52 @@
       if (error) { console.error(error); return; }
       allCandidates = data || [];
       renderTable(allCandidates);
+      renderDeptChips();
     }
 
     function filterCandidates() {
       const q = document.getElementById('searchInput').value.toLowerCase();
       const minStars = parseInt(document.getElementById('filterStars').value) || 0;
+      const dept = document.getElementById('filterDept').value;
+      const nivel = document.getElementById('filterNivel').value;
+      const fuente = document.getElementById('filterFuente').value;
       const filtered = allCandidates.filter(c => {
         const matchText = !q ||
           (c.nombre || '').toLowerCase().includes(q) ||
+          (c.apellido || '').toLowerCase().includes(q) ||
           (c.email || '').toLowerCase().includes(q) ||
-          (c.carrera || '').toLowerCase().includes(q);
+          (c.carrera || '').toLowerCase().includes(q) ||
+          (c.departamento || '').toLowerCase().includes(q);
         const matchStars = !minStars || (c.puntuacion_estrellas || 0) >= minStars;
-        return matchText && matchStars;
+        const matchDept = !dept || c.departamento === dept;
+        const matchNivel = !nivel || c.nivel === nivel;
+        const matchFuente = !fuente || c.fuente === fuente;
+        return matchText && matchStars && matchDept && matchNivel && matchFuente;
       });
       renderTable(filtered);
+    }
+
+    function renderDeptChips() {
+      const counts = {};
+      allCandidates.forEach(c => {
+        const d = c.departamento || 'Sin departamento';
+        counts[d] = (counts[d] || 0) + 1;
+      });
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      document.getElementById('deptChips').innerHTML = sorted.slice(0, 8).map(([dept, count]) =>
+        `<span style="background:#e0f2fe;color:#0369a1;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;cursor:pointer;" onclick="quickFilterDept('${dept}')">${dept} (${count})</span>`
+      ).join('');
+      document.getElementById('totalCount').textContent = allCandidates.length;
+    }
+
+    function quickFilterDept(dept) {
+      const sel = document.getElementById('filterDept');
+      if (dept === 'Sin departamento') {
+        sel.value = '';
+      } else {
+        sel.value = dept;
+      }
+      filterCandidates();
     }
 
     function renderTable(candidates) {
@@ -540,10 +658,9 @@
         const disc = c.resultado_disc ? `<span class="badge badge-disc">${c.resultado_disc}</span>` : '—';
         const carreraLinea = [c.carrera, c.ciudad].filter(Boolean).join(' · ') || '—';
         const fuente = c.fuente ? `<span class="badge badge-portal">${c.fuente}</span>` : '—';
-
-        const vacante = c.vacante_aplicada
-          ? `<span style="font-size:13px;color:#063958;">${c.vacante_aplicada}</span>`
-          : '<span style="color:#bbb;">—</span>';
+        const departamento = c.departamento || '<span style="color:#bbb;">—</span>';
+        const nivelLabels = { junior: 'Junior', mid: 'Mid', senior: 'Senior', gerencial: 'Gerencial' };
+        const nivel = c.nivel ? `<span class="badge" style="background:#f3e8ff;color:#7c3aed;">${nivelLabels[c.nivel] || c.nivel}</span>` : '—';
 
         return `<tr>
           <td>
@@ -555,12 +672,12 @@
               </div>
             </div>
           </td>
-          <td>${vacante}</td>
+          <td style="font-size:13px;">${departamento}</td>
+          <td>${nivel}</td>
           <td>${carreraLinea}</td>
           <td>${salario}</td>
           <td><span class="stars">${stars}</span></td>
           <td>${fuente}</td>
-          <td style="font-size:13px;color:#888;">${fecha}</td>
           <td>
             ${c.cv_url ? `<a href="${c.cv_url}" target="_blank" class="link" style="display:inline-flex;align-items:center;gap:4px;">📄 CV</a>` : '<span style="color:#bbb;font-size:12px;">—</span>'}
           </td>
@@ -612,6 +729,9 @@
         document.getElementById('f_anos_experiencia').value = candidate.anos_experiencia || '';
         document.getElementById('f_salario').value = candidate.salario_esperado || '';
         document.getElementById('f_disc').value = candidate.resultado_disc || '';
+        document.getElementById('f_departamento').value = candidate.departamento || '';
+        document.getElementById('f_nivel').value = candidate.nivel || '';
+        document.getElementById('f_fuente').value = candidate.fuente || '';
         document.getElementById('f_notas').value = candidate.notas || '';
         if (candidate.puntuacion_estrellas) {
           currentStars = candidate.puntuacion_estrellas;
@@ -681,6 +801,9 @@
         linkedin: document.getElementById('f_linkedin').value.trim() || null,
         carrera: document.getElementById('f_carrera').value.trim() || null,
         anos_experiencia: document.getElementById('f_anos_experiencia').value.trim() || null,
+        departamento: document.getElementById('f_departamento').value || null,
+        nivel: document.getElementById('f_nivel').value || null,
+        fuente: document.getElementById('f_fuente').value || null,
         salario_esperado: document.getElementById('f_salario').value || null,
         resultado_disc: document.getElementById('f_disc').value.trim() || null,
         puntuacion_estrellas: currentStars || null,
