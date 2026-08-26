@@ -673,8 +673,11 @@
         const departamento = c.departamento || '<span style="color:#bbb;">—</span>';
         const nivelLabels = { junior: 'Junior', mid: 'Mid', senior: 'Senior', gerencial: 'Gerencial' };
         const nivel = c.nivel ? `<span class="badge" style="background:#f3e8ff;color:#7c3aed;">${nivelLabels[c.nivel] || c.nivel}</span>` : '—';
-        const posiciones = (c._posiciones || []).length
-          ? c._posiciones.map(p => `<span style="font-size:12px;background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:10px;display:inline-block;margin:1px 0;">${p}</span>`).join(' ')
+        const posList = (c._posiciones || []);
+        const vacanteAplicada = c.vacante_aplicada ? [c.vacante_aplicada] : [];
+        const todasPos = [...new Set([...posList, ...vacanteAplicada])];
+        const posiciones = todasPos.length
+          ? todasPos.map(p => `<span style="font-size:12px;background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:10px;display:inline-block;margin:1px 0;">${p}</span>`).join(' ')
           : '<span style="color:#bbb;font-size:12px;">Sin asignar</span>';
 
         return `<tr>
