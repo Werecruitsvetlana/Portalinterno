@@ -362,10 +362,9 @@
         <thead>
           <tr>
             <th>Candidato</th>
+            <th>Posición asignada</th>
             <th>Departamento</th>
             <th>Nivel</th>
-            <th>Carrera / Ciudad</th>
-            <th>Salario esperado</th>
             <th>Puntuación</th>
             <th>Fuente</th>
             <th>CV</th>
@@ -586,6 +585,19 @@
 
       if (error) { console.error(error); return; }
       allCandidates = data || [];
+
+      const { data: cpData } = await sb
+        .from('candidato_posicion')
+        .select('candidato_id, posiciones(titulo)');
+      const posMap = {};
+      (cpData || []).forEach(cp => {
+        if (!posMap[cp.candidato_id]) posMap[cp.candidato_id] = [];
+        if (cp.posiciones?.titulo) posMap[cp.candidato_id].push(cp.posiciones.titulo);
+      });
+      allCandidates.forEach(c => {
+        c._posiciones = posMap[c.id] || [];
+      });
+
       renderTable(allCandidates);
       renderDeptChips();
     }
@@ -661,6 +673,9 @@
         const departamento = c.departamento || '<span style="color:#bbb;">—</span>';
         const nivelLabels = { junior: 'Junior', mid: 'Mid', senior: 'Senior', gerencial: 'Gerencial' };
         const nivel = c.nivel ? `<span class="badge" style="background:#f3e8ff;color:#7c3aed;">${nivelLabels[c.nivel] || c.nivel}</span>` : '—';
+        const posiciones = (c._posiciones || []).length
+          ? c._posiciones.map(p => `<span style="font-size:12px;background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:10px;display:inline-block;margin:1px 0;">${p}</span>`).join(' ')
+          : '<span style="color:#bbb;font-size:12px;">Sin asignar</span>';
 
         return `<tr>
           <td>
@@ -672,10 +687,9 @@
               </div>
             </div>
           </td>
+          <td>${posiciones}</td>
           <td style="font-size:13px;">${departamento}</td>
           <td>${nivel}</td>
-          <td>${carreraLinea}</td>
-          <td>${salario}</td>
           <td><span class="stars">${stars}</span></td>
           <td>${fuente}</td>
           <td>
