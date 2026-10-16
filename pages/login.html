@@ -139,13 +139,7 @@
         <input type="password" id="password" required placeholder="••••••••" minlength="6">
       </div>
       <button type="submit" class="btn" id="submitBtn">Iniciar sesión</button>
-      <button type="button" class="btn btn-secondary" id="toggleBtn" onclick="toggleMode()">Crear cuenta</button>
     </form>
-
-    <div class="toggle">
-      <span id="toggleText">¿No tienes cuenta? </span>
-      <a id="toggleLink" onclick="toggleMode()">Regístrate</a>
-    </div>
   </div>
 
   <script>
@@ -153,21 +147,16 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvaGtwYmtrdGNud3NnbHZjcmF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NjY0MjYsImV4cCI6MjA5NjM0MjQyNn0.yW7atZCGHqipQ-KE-UH5J3DPlXvud5lzf5LMs3J9YzA';
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let isSignUp = false;
-
-    // Si ya está autenticado, redirigir
-    sb.auth.getSession().then(({ data: { session } }) => {
-      if (session) window.location.href = 'index.html';
-    });
-
-    function toggleMode() {
-      isSignUp = !isSignUp;
-      document.getElementById('submitBtn').textContent = isSignUp ? 'Crear cuenta' : 'Iniciar sesión';
-      document.getElementById('toggleBtn').textContent = isSignUp ? 'Iniciar sesión' : 'Crear cuenta';
-      document.getElementById('toggleText').textContent = isSignUp ? '¿Ya tienes cuenta? ' : '¿No tienes cuenta? ';
-      document.getElementById('toggleLink').textContent = isSignUp ? 'Inicia sesión' : 'Regístrate';
-      hideMessages();
+    // Solo entran las cuentas que están en la tabla admins (ver DB/seguridad-1-admins.sql)
+    async function esAdmin() {
+      const { data, error } = await sb.rpc('es_admin');
+      return !error && data === true;
     }
+
+    // Si ya está autenticada como admin, redirigir
+    sb.auth.getSession().then(async ({ data: { session } }) => {
+      if (session && await esAdmin()) window.location.href = 'index.html';
+    });
 
     function showError(msg) {
       const el = document.getElementById('error');
@@ -197,33 +186,26 @@
       const btn = document.getElementById('submitBtn');
 
       btn.disabled = true;
-      btn.textContent = isSignUp ? 'Creando cuenta...' : 'Ingresando...';
+      btn.textContent = 'Ingresando...';
 
       try {
-        if (isSignUp) {
-          const { data, error } = await sb.auth.signUp({ email, password });
-          if (error) throw error;
-          if (data.user && !data.session) {
-            showSuccess('Cuenta creada. Revisa tu correo para confirmar, o inicia sesión directamente.');
-          } else {
-            window.location.href = 'index.html';
-          }
-        } else {
-          const { data, error } = await sb.auth.signInWithPassword({ email, password });
-          if (error) throw error;
-          window.location.href = 'index.html';
+        const { error } = await sb.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        if (!await esAdmin()) {
+          await sb.auth.signOut();
+          throw new Error('Esta cuenta no tiene acceso al portal de gestión');
         }
+        window.location.href = 'index.html';
       } catch (err) {
         const msgs = {
           'Invalid login credentials': 'Correo o contraseña incorrectos',
-          'User already registered': 'Este correo ya tiene cuenta. Inicia sesión.',
           'Password should be at least 6 characters': 'La contraseña debe tener al menos 6 caracteres'
         };
         showError(msgs[err.message] || err.message);
       }
 
       btn.disabled = false;
-      btn.textContent = isSignUp ? 'Crear cuenta' : 'Iniciar sesión';
+      btn.textContent = 'Iniciar sesión';
     });
   </script>
 </body>
