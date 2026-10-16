@@ -1,0 +1,7 @@
+# Solo se publican las páginas del portal; nada de documentación, SQL ni configuración
+.env*
+.claude
+*.md
+docs
+DB
+referencias
