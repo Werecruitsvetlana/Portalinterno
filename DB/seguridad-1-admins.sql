@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS public.admins (
 ALTER TABLE public.admins ENABLE ROW LEVEL SECURITY;
 
 INSERT INTO public.admins (user_id, email)
-SELECT id, email FROM auth.users WHERE lower(email) = 'svetlana@werecruitdr.com'
+SELECT id, email FROM auth.users
+WHERE lower(email) IN ('svetlana@werecruitdr.com', 'talent@werecruitdr.com')
 ON CONFLICT (user_id) DO NOTHING;
 
 -- 2. Función que usan las reglas y el login del portal de gestión
@@ -39,7 +40,7 @@ DECLARE
   sentencia text;
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM public.admins) THEN
-    RAISE EXCEPTION 'No se encontró la cuenta svetlana@werecruitdr.com en auth.users. No se cambió nada.';
+    RAISE EXCEPTION 'No se encontraron las cuentas admin en auth.users. No se cambió nada.';
   END IF;
 
   FOR r IN
@@ -58,7 +59,7 @@ BEGIN
 END $$;
 
 -- 4. Comprobación
--- a) Debe salir 1 fila con tu email:
+-- a) Deben salir 2 filas (svetlana@ y talent@):
 SELECT email FROM public.admins;
 
 -- b) Debe salir VACÍO. Si sale alguna regla, avísale a Claude antes de seguir:
