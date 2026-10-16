@@ -91,3 +91,8 @@ WHERE schemaname = 'public'
   AND tablename IN ('candidatos', 'aplicaciones_vacante', 'vacantes_portal', 'candidato_posicion',
                     'empresas_portal', 'perfiles_candidato', 'banca_candidatos')
 ORDER BY 1, 2, 3;
+
+-- =============================================
+-- SEGURIDAD 4 (2026-10-16) — candidatos tenía RLS apagado: cualquiera la leía.
+-- =============================================
+ALTER TABLE public.candidatos ENABLE ROW LEVEL SECURITY;
