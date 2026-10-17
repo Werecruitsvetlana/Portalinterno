@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banca de Candidatos — We Recruit DR</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f7fa;
+      color: #1a1a1a;
+    }
+
+    /* NAV LATERAL */
+    .sidebar {
+      position: fixed;
+      left: 0; top: 0;
+      width: 220px;
+      height: 100vh;
+      background: #063958;
+      padding: 24px 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-logo {
+      color: #CEE4CC;
+      font-size: 18px;
+      font-weight: 700;
+      padding: 0 20px;
+      margin-bottom: 32px;
+    }
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 20px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.15s;
+    }
+    .sidebar a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .sidebar a.active { background: rgba(255,255,255,0.12); color: #CEE4CC; font-weight: 600; }
+    .sidebar-bottom {
+      margin-top: auto;
+      padding: 0 20px;
+    }
+    .sidebar-bottom button {
+      width: 100%;
+      padding: 10px;
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.7);
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .sidebar-bottom button:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+    /* CONTENIDO */
+    .main { margin-left: 220px; padding: 32px; }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .page-header h1 { font-size: 24px; color: #063958; }
+
+    /* CONTROLES */
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 14px;
+      border: 1.5px solid #dde5ed;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+    .search-input:focus { border-color: #0F6B9F; }
+    .filter-select {
+      padding: 10px 14px;
+      border: 1.5px solid #dde5ed;
+      border-radius: 8px;
+      font-size: 14px;
+      background: #fff;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* BOTONES */
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-primary { background: #0F6B9F; color: #fff; }
+    .btn-primary:hover { background: #063958; }
+    .btn-secondary { background: #e8ecf1; color: #063958; }
+    .btn-secondary:hover { background: #dde5ed; }
+    .btn-danger { background: #fef2f2; color: #b91c1c; }
+    .btn-danger:hover { background: #fde8e8; }
+    .btn-sm { padding: 6px 14px; font-size: 13px; }
+
+    /* TABLA */
+    .table-container {
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: #f8f9fb;
+      border-bottom: 1px solid #eee;
+    }
+    td {
+      padding: 12px 16px;
+      font-size: 14px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    tr:hover { background: #f8f9fb; }
+    tr:last-child td { border-bottom: none; }
+
+    .candidate-name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #CEE4CC;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: #063958;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .stars { color: #f59e0b; font-size: 14px; letter-spacing: 1px; }
+    .stars .empty { color: #ddd; }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-disc { background: #ede9fe; color: #6d28d9; }
+    .badge-portal { background: #e0f2fe; color: #0369a1; }
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #888;
+    }
+    .empty-state p { margin-top: 8px; font-size: 14px; }
+    .link { color: #0F6B9F; text-decoration: none; cursor: pointer; }
+    .link:hover { text-decoration: underline; }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      padding: 32px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal h2 {
+      font-size: 20px;
+      color: #063958;
+      margin-bottom: 24px;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #063958;
+      margin-bottom: 5px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid #dde5ed;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: #0F6B9F; }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+    .form-full { grid-column: 1 / -1; }
+
+    /* EVALUACIÓN */
+    .eval-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      background: #f8f9fb;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .eval-item label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+      display: block;
+    }
+    .eval-item select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #dde5ed;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .star-input { cursor: pointer; font-size: 22px; }
+    .star-input span { color: #ddd; transition: color 0.1s; }
+    .star-input span.active { color: #f59e0b; }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 20px;
+      background: #063958;
+      color: #fff;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 200;
+      display: none;
+    }
+    .toast.show { display: block; }
+    .kpi { background:#fff;border-radius:10px;padding:14px 18px;box-shadow:0 1px 3px rgba(0,0,0,0.06);display:flex;align-items:center;gap:8px; }
+    .kpi-n { font-size:22px;font-weight:700;color:#063958; }
+    .kpi-l { font-size:12px;color:#888; }
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo">We Recruit DR</div>
+    <a href="index.html">📊 Dashboard</a>
+    <a href="candidatos.html">👤 Candidatos</a>
+    <a href="banca.html" class="active">🗂️ Banca de Candidatos</a>
+    <a href="posiciones.html">💼 Posiciones</a>
+    <a href="ternas.html">📋 Ternas</a>
+    <a href="empresas.html">🏢 Empresas</a>
+    <a href="freelancers.html">🎨 Freelancers</a>
+    <div class="sidebar-bottom">
+      <button onclick="logout()">Cerrar sesión</button>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="page-header">
+      <h1>Banca de Candidatos</h1>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-secondary" onclick="document.getElementById('importDir').click()">⬆ Importar carpeta de CVs</button>
+        <input type="file" id="importDir" webkitdirectory multiple style="display:none" onchange="importar(this.files)">
+      </div>
+    </div>
+
+    <div id="importBox" style="display:none;background:#fff;border-radius:10px;padding:14px 18px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+      <div style="font-size:13px;color:#063958;font-weight:600;" id="importMsg">Preparando…</div>
+      <div style="height:8px;background:#e8ecf1;border-radius:6px;margin-top:8px;overflow:hidden;"><div id="importBar" style="height:100%;width:0;background:#0F6B9F;transition:width .3s;"></div></div>
+      <div style="font-size:12px;color:#888;margin-top:6px;">No cierres esta pestaña mientras se suben los archivos. Si se interrumpe, vuelve a importar la misma carpeta y continúa donde quedó.</div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
+      <div class="kpi"><span class="kpi-n" id="kTotal">0</span><span class="kpi-l">CVs en la banca</span></div>
+      <div class="kpi"><span class="kpi-n" id="kRD">0</span><span class="kpi-l">en República Dominicana</span></div>
+      <div class="kpi"><span class="kpi-n" id="kPos">0</span><span class="kpi-l">posiciones</span></div>
+      <div class="kpi"><span class="kpi-n" id="kShown">0</span><span class="kpi-l">con los filtros actuales</span></div>
+    </div>
+
+    <div class="controls">
+      <input type="text" class="search-input" id="q" placeholder="Buscar por nombre, correo, teléfono o asunto…" oninput="aplicar()">
+      <select class="filter-select" id="fPos" onchange="aplicar()"><option value="">Todas las posiciones</option></select>
+      <select class="filter-select" id="fPais" onchange="aplicar()">
+        <option value="">Todos los países</option>
+        <option value="RD" selected>Solo República Dominicana</option>
+        <option value="__otros">Fuera de RD / no indica</option>
+      </select>
+      <select class="filter-select" id="fNivel" onchange="aplicar()"><option value="">Todos los niveles</option></select>
+      <select class="filter-select" id="fEstado" onchange="aplicar()">
+        <option value="">Todos los estados</option>
+        <option value="nuevo">Nuevo</option><option value="revisado">Revisado</option><option value="contactado">Contactado</option>
+        <option value="en_terna">En terna</option><option value="descartado">Descartado</option>
+      </select>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead><tr><th>Candidato</th><th>Posición</th><th>Nivel</th><th>País</th><th>Recibido</th><th>Estado</th><th>CV</th><th>Notas</th></tr></thead>
+        <tbody id="tb"></tbody>
+      </table>
+      <div class="empty-state" id="empty" style="display:none;"><p style="font-size:32px;">🗂️</p><p id="emptyMsg">No hay CVs con esos filtros.</p></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:13px;color:#666;">
+      <span id="pgInfo"></span>
+      <span><button class="btn btn-secondary btn-sm" onclick="pagina(-1)">← Anterior</button> <button class="btn btn-secondary btn-sm" onclick="pagina(1)">Siguiente →</button></span>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://bohkpbkktcnwsglvcrax.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvaGtwYmtrdGNud3NnbHZjcmF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NjY0MjYsImV4cCI6MjA5NjM0MjQyNn0.yW7atZCGHqipQ-KE-UH5J3DPlXvud5lzf5LMs3J9YzA';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const BUCKET = 'banca-cvs', POR_PAG = 50;
+    let todos = [], vista = [], pag = 0, initialized = false;
+
+    sb.auth.onAuthStateChange((event, session) => {
+      if (!session) { window.location.href = 'login.html'; }
+      else if (!initialized) { initialized = true; cargar(); }
+    });
+    async function logout() { await sb.auth.signOut(); window.location.href = 'login.html'; }
+    function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3500); }
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const norm = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+    async function cargar() {
+      todos = [];
+      for (let from = 0; ; from += 1000) {
+        const { data, error } = await sb.from('banca_candidatos').select('*').order('posicion').order('nombre').range(from, from + 999);
+        if (error) { document.getElementById('empty').style.display = 'block'; document.getElementById('emptyMsg').textContent = 'No se pudo cargar la banca: ' + error.message; return; }
+        todos = todos.concat(data);
+        if (data.length < 1000) break;
+      }
+      const pos = [...new Set(todos.map(c => c.posicion).filter(Boolean))].sort();
+      const niv = [...new Set(todos.map(c => c.nivel).filter(Boolean))].sort();
+      const cnt = {}; todos.forEach(c => cnt[c.posicion] = (cnt[c.posicion] || 0) + 1);
+      document.getElementById('fPos').innerHTML = '<option value="">Todas las posiciones</option>' + pos.map(p => `<option value="${esc(p)}">${esc(p)} (${cnt[p]})</option>`).join('');
+      document.getElementById('fNivel').innerHTML = '<option value="">Todos los niveles</option>' + niv.map(p => `<option>${esc(p)}</option>`).join('');
+      document.getElementById('kTotal').textContent = todos.length.toLocaleString();
+      document.getElementById('kRD').textContent = todos.filter(c => c.pais === 'RD').length.toLocaleString();
+      document.getElementById('kPos').textContent = pos.length;
+      aplicar();
+    }
+
+    function aplicar() {
+      const q = norm(document.getElementById('q').value), p = document.getElementById('fPos').value, pa = document.getElementById('fPais').value,
+            n = document.getElementById('fNivel').value, e = document.getElementById('fEstado').value;
+      vista = todos.filter(c =>
+        (!p || c.posicion === p) && (!n || c.nivel === n) && (!e || (c.estado || 'nuevo') === e) &&
+        (!pa || (pa === 'RD' ? c.pais === 'RD' : c.pais !== 'RD')) &&
+        (!q || norm([c.nombre, c.email, c.telefono, c.asunto, c.posicion, c.notas].join(' ')).includes(q)));
+      pag = 0; pintar();
+    }
+    function pagina(d) { const max = Math.max(0, Math.ceil(vista.length / POR_PAG) - 1); pag = Math.min(max, Math.max(0, pag + d)); pintar(); window.scrollTo(0, 0); }
+
+    function pintar() {
+      const rows = vista.slice(pag * POR_PAG, (pag + 1) * POR_PAG);
+      document.getElementById('kShown').textContent = vista.length.toLocaleString();
+      document.getElementById('empty').style.display = vista.length ? 'none' : 'block';
+      document.getElementById('pgInfo').textContent = vista.length ? `Mostrando ${pag * POR_PAG + 1}–${pag * POR_PAG + rows.length} de ${vista.length.toLocaleString()}` : '';
+      const estados = [['nuevo','Nuevo'],['revisado','Revisado'],['contactado','Contactado'],['en_terna','En terna'],['descartado','Descartado']];
+      document.getElementById('tb').innerHTML = rows.map(c => `
+        <tr>
+          <td><div style="font-weight:600;color:#063958;">${esc(c.nombre)}</div>
+              <div style="font-size:12px;color:#666;">${c.email ? `<a class="link" href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : ''}${c.email && c.telefono ? ' · ' : ''}${esc(c.telefono || '')}</div>
+              ${c.asunto ? `<div style="font-size:11px;color:#999;max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(c.asunto)}">${esc(c.asunto)}</div>` : ''}</td>
+          <td>${esc(c.posicion || '')}</td>
+          <td>${esc(c.nivel || '—')}</td>
+          <td>${c.pais === 'RD' ? '<span class="badge badge-portal">RD</span>' : esc(c.pais || '—')}</td>
+          <td style="white-space:nowrap;">${esc(c.fecha_correo || '')}</td>
+          <td><select class="filter-select" style="padding:5px 8px;font-size:12px;" onchange="guardar('${c.id}','estado',this.value)">${estados.map(([v, l]) => `<option value="${v}" ${(c.estado || 'nuevo') === v ? 'selected' : ''}>${l}</option>`).join('')}</select></td>
+          <td>${c.cv_ok ? `<span class="link" onclick="verCV('${c.id}')">Ver CV</span>${c.tipo === 'Escaneado' ? '<div style="font-size:11px;color:#b45309;">escaneado</div>' : ''}` : '<span style="font-size:12px;color:#aaa;">pendiente de subir</span>'}</td>
+          <td><input type="text" value="${esc(c.notas || '')}" placeholder="Agregar nota…" style="width:170px;padding:5px 8px;border:1px solid #dde3ea;border-radius:6px;font-size:12px;" onchange="guardar('${c.id}','notas',this.value)"></td>
+        </tr>`).join('');
+    }
+
+    async function guardar(id, campo, valor) {
+      const { error } = await sb.from('banca_candidatos').update({ [campo]: valor, updated_at: new Date().toISOString() }).eq('id', id);
+      if (error) return showToast('No se pudo guardar: ' + error.message);
+      const c = todos.find(x => x.id === id); if (c) c[campo] = valor;
+      showToast('Guardado');
+    }
+
+    async function verCV(id) {
+      const c = todos.find(x => x.id === id); if (!c) return;
+      const { data, error } = await sb.storage.from(BUCKET).createSignedUrl(c.cv_path, 3600, { download: false });
+      if (error) return showToast('No se pudo abrir el CV: ' + error.message);
+      window.open(data.signedUrl, '_blank');
+    }
+
+    // ---------- Importar: lee banca_import.json de la carpeta elegida, crea las filas y sube los archivos ----------
+    async function importar(fileList) {
+      const files = [...fileList], box = document.getElementById('importBox'), msg = document.getElementById('importMsg'), bar = document.getElementById('importBar');
+      const idx = files.find(f => f.name === 'banca_import.json');
+      if (!idx) return showToast('Esa carpeta no tiene el archivo banca_import.json. Elige la carpeta "Banca por Posicion".');
+      box.style.display = 'block'; msg.textContent = 'Leyendo la lista…';
+      const lista = JSON.parse(await idx.text());
+      const porRuta = {}; files.forEach(f => { const p = f.webkitRelativePath.split('/').slice(1).join('/'); porRuta[p.normalize('NFC')] = f; });
+
+      for (let i = 0; i < lista.length; i += 500) {
+        const lote = lista.slice(i, i + 500).map(({ rel, ...fila }) => fila);
+        const { error } = await sb.from('banca_candidatos').upsert(lote, { onConflict: 'id', ignoreDuplicates: true });
+        if (error) { msg.textContent = 'Error al guardar la lista: ' + error.message; return; }
+        msg.textContent = `Guardando la lista… ${Math.min(i + 500, lista.length)} de ${lista.length}`; bar.style.width = (Math.min(i + 500, lista.length) / lista.length * 10) + '%';
+      }
+
+      let ya = new Set();
+      for (let from = 0; ; from += 1000) {
+        const { data, error } = await sb.from('banca_candidatos').select('id').eq('cv_ok', true).range(from, from + 999);
+        if (error || !data.length) break; data.forEach(d => ya.add(d.id)); if (data.length < 1000) break;
+      }
+      const cola = lista.filter(r => !ya.has(r.id)); let hechos = 0, fallos = 0, sinArchivo = 0, okIds = [];
+      const total = cola.length;
+      const marcar = async () => { const ids = okIds.splice(0); if (ids.length) await sb.from('banca_candidatos').update({ cv_ok: true }).in('id', ids); };
+      async function trabajador() {
+        while (cola.length) {
+          const r = cola.shift(), f = porRuta[r.rel.normalize('NFC')];
+          if (!f) { sinArchivo++; }
+          else {
+            const { error } = await sb.storage.from(BUCKET).upload(r.cv_path, f, { upsert: true, contentType: f.type || 'application/octet-stream' });
+            if (error) fallos++; else { okIds.push(r.id); if (okIds.length >= 40) await marcar(); }
+          }
+          hechos++;
+          if (hechos % 5 === 0 || !cola.length) { msg.textContent = `Subiendo CVs… ${hechos} de ${total}` + (fallos ? ` · ${fallos} con error` : ''); bar.style.width = (10 + hechos / Math.max(1, total) * 90) + '%'; }
+        }
+      }
+      await Promise.all([1, 2, 3, 4].map(trabajador)); await marcar();
+      msg.textContent = `Importación terminada: ${total - fallos - sinArchivo} CVs subidos` + (ya.size ? `, ${ya.size} ya estaban` : '') + (fallos ? `, ${fallos} con error (vuelve a importar para reintentar)` : '') + (sinArchivo ? `, ${sinArchivo} sin archivo en la carpeta` : '') + '.';
+      bar.style.width = '100%'; document.getElementById('importDir').value = ''; cargar();
+    }
+  </script>
+</body>
+</html>
