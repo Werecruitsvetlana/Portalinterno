@@ -141,3 +141,21 @@ GitHub CLI + Vercel CLI instalados. Repo conectado, deploy automático con `verc
 
 ### 2026-06-05 — Proyecto creado
 Se revisó el portal público y se documentó su estado actual. Proyecto designado como el más importante de We Recruit.
+
+### 2026-10-01 — Pestaña "Banca de Candidatos" (construida, pendiente de activar)
+Nueva página `banca.html` (también en `pages/`) con enlace en el menú de todas las páginas. Muestra los CVs recibidos por correo (talent@), organizados por posición: buscador, filtros por posición / país (RD por defecto) / nivel / estado, estado y notas editables, y "Ver CV" con enlace firmado.
+- Tabla nueva `banca_candidatos` y bucket PRIVADO `banca-cvs`: script en `DB/banca-candidatos.sql` (**pendiente de ejecutar en Supabase SQL Editor**).
+- Datos: 3,783 CVs únicos (~2.2 GB) en `CV-s talent\Banca por Posicion\` (38 carpetas por posición + `Banca de Candidatos.xlsx` + `banca_import.json`). Extraídos del buzón con Thunderbird (IMAP imap.secureserver.net) y scripts en `CV-s talent\_Entrada correo\`.
+- Carga: botón "Importar carpeta de CVs" en la pestaña → elegir la carpeta `Banca por Posicion`. Crea las filas y sube los archivos; se puede reanudar.
+- Requiere Supabase Pro (el plan gratuito da 1 GB de almacenamiento). Svetlana decidió pasar a Pro.
+- **Pendiente:** (1) pasar a Pro, (2) ejecutar el SQL, (3) `vercel --prod`, (4) importar la carpeta desde el portal.
+- Nota: quedó `.git/_stale_index_lock_borrar` (archivo vacío, se puede borrar) y ya existía `.git/HEAD.lock` del 7-sep que puede bloquear commits.
+
+### 2026-10-01 (tarde) — Banca de Candidatos activa y rediseñada
+- Activada: Supabase en Pro, SQL ejecutado, 3,783 filas y 3,783 archivos subidos al bucket privado `banca-cvs`.
+- Rediseño (`banca.html` v2; la v1 quedó en `docs/banca-v1-respaldo.html`): entrada con carpetas por posición, buscador global que también busca dentro del texto del CV (columna `texto`, `ilike`), filtros de ciudad / nivel / estado / fecha, y panel lateral con vista previa del CV, WhatsApp, correo, estado y notas. **Pendiente: `vercel --prod` para publicar la v2.**
+- Actualización diaria: skill `actualizar-banca-candidatos` + tarea programada 7:50 a.m.; procedimiento en `CV-s talent\_Entrada correo\PROCEDIMIENTO.md`.
+
+### 2026-10-17 — Pestaña "Vacantes Abiertas" (construida, pendiente de desplegar)
+Nueva página `vacantes-abiertas.html` (raíz y `pages/`), con enlace "⏱️ Vacantes Abiertas" en el menú de todas las páginas, debajo de Posiciones. Tracker de tiempo: lee `posiciones` con estado abierta/en proceso; "Recibida" = `fecha_apertura` (editable en la tabla), días abiertos calculados contra hoy con semáforo (0–14 / 15–30 / 31–60 / +60), fecha límite con días restantes o vencida, conteo de candidatos desde `candidato_posicion`, estado editable (cubierta/cancelada la saca de la lista). KPIs: total, promedio de días, la más antigua, cuántas pasan de 30 días. Botón "+ Nueva vacante" crea la fila en `posiciones`. No requiere SQL nuevo.
+Pendiente posible: columna `fecha_cierre` para medir tiempo de cierre de las vacantes cubiertas.

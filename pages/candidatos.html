@@ -292,7 +292,9 @@
     <div class="sidebar-logo">We Recruit DR</div>
     <a href="index.html">📊 Dashboard</a>
     <a href="candidatos.html" class="active">👤 Candidatos</a>
+    <a href="banca.html">🗂️ Banca de Candidatos</a>
     <a href="posiciones.html">💼 Posiciones</a>
+    <a href="vacantes-abiertas.html">⏱️ Vacantes Abiertas</a>
     <a href="ternas.html">📋 Ternas</a>
     <a href="empresas.html">🏢 Empresas</a>
     <a href="freelancers.html">🎨 Freelancers</a>
@@ -349,6 +351,15 @@
         <option value="portal">Portal</option>
         <option value="otro">Otro</option>
       </select>
+      <select class="filter-select" id="filterPosicion" onchange="filterCandidates()">
+        <option value="">Todas las posiciones</option>
+      </select>
+      <select class="filter-select" id="filterFitStatus" onchange="filterCandidates()">
+        <option value="">Todos los estados</option>
+        <option value="fit">Fit (aprobado/contratado)</option>
+        <option value="notfit">Not a fit</option>
+        <option value="pending">Pendiente de evaluar</option>
+      </select>
       <select class="filter-select" id="filterStars" onchange="filterCandidates()">
         <option value="">Todas las puntuaciones</option>
         <option value="5">⭐⭐⭐⭐⭐ (5)</option>
@@ -367,6 +378,7 @@
             <th>Nivel</th>
             <th>Puntuación</th>
             <th>Fuente</th>
+            <th>Fit</th>
             <th>CV</th>
             <th></th>
           </tr>
@@ -552,6 +564,23 @@
     </div>
   </div>
 
+  <!-- Modal Not a Fit -->
+  <div class="modal-overlay" id="notFitModal" onclick="if(event.target===this)closeNotFitModal()">
+    <div class="modal" style="max-width:420px;">
+      <h2 style="font-size:18px;">Marcar como Not a Fit</h2>
+      <input type="hidden" id="nfCpId">
+      <p style="font-size:14px;color:#666;margin-bottom:16px;">Posición: <strong id="nfTitulo"></strong></p>
+      <div class="form-group">
+        <label>Motivo (opcional)</label>
+        <textarea id="nfFeedback" rows="3" placeholder="Ej: No cumple experiencia mínima, salario fuera de rango, perfil no alineado..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeNotFitModal()">Cancelar</button>
+        <button class="btn" style="background:#b91c1c;color:#fff;" onclick="confirmNotFit()">Confirmar Not a Fit</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script>
@@ -588,18 +617,23 @@
 
       const { data: cpData } = await sb
         .from('candidato_posicion')
-        .select('candidato_id, posiciones(titulo)');
+        .select('id, candidato_id, posicion_id, estado, feedback_cliente, posiciones(titulo)');
       const posMap = {};
+      const cpMap = {};
       (cpData || []).forEach(cp => {
         if (!posMap[cp.candidato_id]) posMap[cp.candidato_id] = [];
+        if (!cpMap[cp.candidato_id]) cpMap[cp.candidato_id] = [];
         if (cp.posiciones?.titulo) posMap[cp.candidato_id].push(cp.posiciones.titulo);
+        cpMap[cp.candidato_id].push({ cpId: cp.id, titulo: cp.posiciones?.titulo || '', estado: cp.estado, feedback: cp.feedback_cliente });
       });
       allCandidates.forEach(c => {
         c._posiciones = posMap[c.id] || [];
+        c._cpRecords = cpMap[c.id] || [];
       });
 
       renderTable(allCandidates);
       renderDeptChips();
+      renderPosFilter();
     }
 
     function filterCandidates() {
@@ -608,6 +642,8 @@
       const dept = document.getElementById('filterDept').value;
       const nivel = document.getElementById('filterNivel').value;
       const fuente = document.getElementById('filterFuente').value;
+      const posicion = document.getElementById('filterPosicion').value;
+      const fitStatus = document.getElementById('filterFitStatus').value;
       const filtered = allCandidates.filter(c => {
         const matchText = !q ||
           (c.nombre || '').toLowerCase().includes(q) ||
@@ -619,7 +655,16 @@
         const matchDept = !dept || c.departamento === dept;
         const matchNivel = !nivel || c.nivel === nivel;
         const matchFuente = !fuente || c.fuente === fuente;
-        return matchText && matchStars && matchDept && matchNivel && matchFuente;
+        const allPos = [...(c._cpRecords || []).map(r => r.titulo), ...(c.vacante_aplicada ? [c.vacante_aplicada] : [])];
+        const matchPos = !posicion || allPos.includes(posicion);
+        let matchFit = true;
+        if (fitStatus) {
+          const records = c._cpRecords || [];
+          if (fitStatus === 'notfit') matchFit = records.some(r => r.estado === 'rechazado');
+          else if (fitStatus === 'fit') matchFit = records.some(r => r.estado === 'aprobado' || r.estado === 'contratado');
+          else if (fitStatus === 'pending') matchFit = records.length > 0 && records.every(r => r.estado !== 'rechazado' && r.estado !== 'aprobado' && r.estado !== 'contratado');
+        }
+        return matchText && matchStars && matchDept && matchNivel && matchFuente && matchPos && matchFit;
       });
       renderTable(filtered);
     }
@@ -635,6 +680,19 @@
         `<span style="background:#e0f2fe;color:#0369a1;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;cursor:pointer;" onclick="quickFilterDept('${dept}')">${dept} (${count})</span>`
       ).join('');
       document.getElementById('totalCount').textContent = allCandidates.length;
+    }
+
+    function renderPosFilter() {
+      const posSet = new Set();
+      allCandidates.forEach(c => {
+        (c._cpRecords || []).forEach(r => { if (r.titulo) posSet.add(r.titulo); });
+        if (c.vacante_aplicada) posSet.add(c.vacante_aplicada);
+      });
+      const sel = document.getElementById('filterPosicion');
+      const current = sel.value;
+      sel.innerHTML = '<option value="">Todas las posiciones</option>' +
+        [...posSet].sort().map(p => `<option value="${p}">${p}</option>`).join('');
+      sel.value = current;
     }
 
     function quickFilterDept(dept) {
@@ -695,6 +753,7 @@
           <td>${nivel}</td>
           <td><span class="stars">${stars}</span></td>
           <td>${fuente}</td>
+          <td>${renderFitColumn(c)}</td>
           <td>
             ${c.cv_url ? `<a href="${c.cv_url}" target="_blank" class="link" style="display:inline-flex;align-items:center;gap:4px;">📄 CV</a>` : '<span style="color:#bbb;font-size:12px;">—</span>'}
           </td>
@@ -907,8 +966,51 @@
       setTimeout(() => t.classList.remove('show'), 3000);
     }
 
+    function renderFitColumn(c) {
+      const records = c._cpRecords || [];
+      if (!records.length) return '<span style="color:#bbb;font-size:12px;">—</span>';
+      return records.map(r => {
+        if (r.estado === 'rechazado') {
+          return `<div style="margin:2px 0;"><span style="font-size:11px;background:#fef2f2;color:#b91c1c;padding:2px 8px;border-radius:10px;display:inline-block;">✗ Not a fit</span>
+            <div style="font-size:10px;color:#888;margin-top:1px;">${r.titulo}${r.feedback ? ' · ' + r.feedback : ''}</div></div>`;
+        }
+        if (r.estado === 'contratado' || r.estado === 'aprobado') {
+          return `<div style="margin:2px 0;"><span style="font-size:11px;background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;display:inline-block;">✓ Fit</span>
+            <div style="font-size:10px;color:#888;margin-top:1px;">${r.titulo}</div></div>`;
+        }
+        return `<div style="margin:2px 0;">
+          <button onclick="event.stopPropagation();openNotFitModal('${r.cpId}','${r.titulo.replace(/'/g, "\\'")}')" style="font-size:11px;background:#fff;border:1px solid #e5e7eb;color:#666;padding:3px 8px;border-radius:8px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='#b91c1c';this.style.color='#b91c1c'" onmouseout="this.style.borderColor='#e5e7eb';this.style.color='#666'">✗ Not a fit</button>
+          <div style="font-size:10px;color:#888;margin-top:1px;">${r.titulo}</div>
+        </div>`;
+      }).join('');
+    }
+
+    function openNotFitModal(cpId, titulo) {
+      document.getElementById('nfCpId').value = cpId;
+      document.getElementById('nfTitulo').textContent = titulo;
+      document.getElementById('nfFeedback').value = '';
+      document.getElementById('notFitModal').classList.add('active');
+    }
+
+    function closeNotFitModal() {
+      document.getElementById('notFitModal').classList.remove('active');
+    }
+
+    async function confirmNotFit() {
+      const cpId = document.getElementById('nfCpId').value;
+      const feedback = document.getElementById('nfFeedback').value.trim();
+      const { error } = await sb.from('candidato_posicion').update({
+        estado: 'rechazado',
+        feedback_cliente: feedback || 'Not a fit'
+      }).eq('id', cpId);
+      if (error) { console.error(error); return; }
+      closeNotFitModal();
+      showToast('Candidato marcado como Not a fit');
+      await loadCandidates();
+    }
+
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeModal();
+      if (e.key === 'Escape') { closeModal(); closeNotFitModal(); }
     });
     document.getElementById('modal').addEventListener('click', (e) => {
       if (e.target === e.currentTarget) closeModal();

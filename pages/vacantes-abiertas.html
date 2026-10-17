@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vacantes Abiertas — We Recruit DR</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #1a1a1a; }
+    .sidebar { position: fixed; left: 0; top: 0; width: 220px; height: 100vh; background: #063958; padding: 24px 0; display: flex; flex-direction: column; }
+    .sidebar-logo { color: #CEE4CC; font-size: 18px; font-weight: 700; padding: 0 20px; margin-bottom: 32px; }
+    .sidebar a { display: flex; align-items: center; gap: 10px; padding: 11px 20px; color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; transition: all 0.15s; }
+    .sidebar a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .sidebar a.active { background: rgba(255,255,255,0.12); color: #CEE4CC; font-weight: 600; }
+    .sidebar-bottom { margin-top: auto; padding: 0 20px; }
+    .sidebar-bottom button { width: 100%; padding: 10px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); border: none; border-radius: 6px; font-size: 13px; cursor: pointer; }
+    .sidebar-bottom button:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+    .main { margin-left: 220px; padding: 32px; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .page-header h1 { font-size: 24px; color: #063958; }
+    .subtitle { font-size: 13px; color: #6b7785; margin-bottom: 24px; }
+
+    .kpis { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; margin-bottom: 24px; }
+    .kpi { background: #fff; border-radius: 10px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .kpi-label { font-size: 12px; color: #6b7785; text-transform: uppercase; letter-spacing: .04em; }
+    .kpi-value { font-size: 28px; font-weight: 700; color: #063958; margin-top: 4px; font-variant-numeric: tabular-nums; }
+    .kpi-sub { font-size: 12px; color: #8a96a3; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .kpi.alert .kpi-value { color: #b91c1c; }
+
+    .controls { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .search-input { flex: 1; min-width: 200px; padding: 10px 14px; border: 1.5px solid #dde5ed; border-radius: 8px; font-size: 14px; outline: none; }
+    .search-input:focus { border-color: #0F6B9F; }
+    .filter-select { padding: 10px 14px; border: 1.5px solid #dde5ed; border-radius: 8px; font-size: 14px; background: #fff; outline: none; cursor: pointer; }
+
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .btn-primary { background: #0F6B9F; color: #fff; }
+    .btn-primary:hover { background: #063958; }
+    .btn-secondary { background: #e8ecf1; color: #063958; }
+    .btn-secondary:hover { background: #dde5ed; }
+
+    .table-wrap { background: #fff; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #6b7785; font-weight: 600; padding: 12px 14px; border-bottom: 1px solid #e8ecf1; white-space: nowrap; cursor: pointer; user-select: none; }
+    th.sorted { color: #063958; }
+    td { padding: 12px 14px; border-bottom: 1px solid #f0f3f6; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafbfd; }
+    .v-title { font-weight: 600; color: #063958; }
+    .v-title a { color: inherit; text-decoration: none; }
+    .v-title a:hover { text-decoration: underline; }
+    .v-sub { font-size: 12px; color: #8a96a3; margin-top: 2px; }
+    .num { font-variant-numeric: tabular-nums; }
+
+    .date-input, .estado-select { padding: 6px 8px; border: 1px solid #dde5ed; border-radius: 6px; font-size: 13px; font-family: inherit; background: #fff; }
+    .date-input:focus, .estado-select:focus { outline: none; border-color: #0F6B9F; }
+
+    .days { display: inline-block; min-width: 64px; text-align: center; padding: 4px 10px; border-radius: 12px; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .d-ok   { background: #dcfce7; color: #166534; }
+    .d-mid  { background: #fef3c7; color: #92400e; }
+    .d-high { background: #ffedd5; color: #9a3412; }
+    .d-crit { background: #fee2e2; color: #b91c1c; }
+    .d-none { background: #eef1f5; color: #6b7785; font-weight: 500; }
+
+    .limit-late { color: #b91c1c; font-weight: 600; }
+    .limit-soon { color: #92400e; font-weight: 600; }
+    .muted { color: #9aa5b1; }
+
+    .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: #6b7785; margin: 12px 2px 0; }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+    .empty-state { text-align: center; padding: 48px 20px; color: #888; }
+
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: #fff; border-radius: 12px; padding: 28px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
+    .modal h2 { font-size: 20px; color: #063958; margin-bottom: 20px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: #063958; margin-bottom: 5px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 12px; border: 1.5px solid #dde5ed; border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; }
+    .form-group textarea { resize: vertical; min-height: 70px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+
+    .toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; background: #063958; color: #fff; border-radius: 8px; font-size: 14px; z-index: 200; display: none; }
+    .toast.show { display: block; }
+
+    @media (max-width: 1000px) { .kpis { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo">We Recruit DR</div>
+    <a href="index.html">📊 Dashboard</a>
+    <a href="candidatos.html">👤 Candidatos</a>
+    <a href="banca.html">🗂️ Banca de Candidatos</a>
+    <a href="posiciones.html">💼 Posiciones</a>
+    <a href="vacantes-abiertas.html" class="active">⏱️ Vacantes Abiertas</a>
+    <a href="ternas.html">📋 Ternas</a>
+    <a href="empresas.html">🏢 Empresas</a>
+    <a href="freelancers.html">🎨 Freelancers</a>
+    <div class="sidebar-bottom">
+      <button onclick="logout()">Cerrar sesión</button>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="page-header">
+      <h1>Vacantes abiertas</h1>
+      <button class="btn btn-primary" onclick="openModal()">+ Nueva vacante</button>
+    </div>
+    <p class="subtitle">Cuándo recibimos cada vacante y cuántos días lleva abierta. Al marcarla como cubierta o cancelada sale de esta lista.</p>
+
+    <div class="kpis">
+      <div class="kpi"><div class="kpi-label">Vacantes abiertas</div><div class="kpi-value" id="kTotal">—</div><div class="kpi-sub" id="kTotalSub">&nbsp;</div></div>
+      <div class="kpi"><div class="kpi-label">Promedio abierta</div><div class="kpi-value" id="kProm">—</div><div class="kpi-sub">días desde que la recibimos</div></div>
+      <div class="kpi"><div class="kpi-label">La más antigua</div><div class="kpi-value" id="kMax">—</div><div class="kpi-sub" id="kMaxSub">&nbsp;</div></div>
+      <div class="kpi" id="kOldBox"><div class="kpi-label">Más de 30 días</div><div class="kpi-value" id="kOld">—</div><div class="kpi-sub">requieren seguimiento</div></div>
+    </div>
+
+    <div class="controls">
+      <input type="text" class="search-input" id="searchInput" placeholder="Buscar por vacante o cliente..." oninput="render()">
+      <select class="filter-select" id="filterEstado" onchange="render()">
+        <option value="">Abiertas y en proceso</option>
+        <option value="abierta">Solo abiertas</option>
+        <option value="en_proceso">Solo en proceso</option>
+      </select>
+      <select class="filter-select" id="filterEmpresa" onchange="render()">
+        <option value="">Todos los clientes</option>
+      </select>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th data-sort="titulo">Vacante</th>
+            <th data-sort="empresa">Cliente</th>
+            <th data-sort="fecha_apertura">Recibida</th>
+            <th data-sort="dias">Días abierta</th>
+            <th data-sort="fecha_limite">Fecha límite</th>
+            <th data-sort="candidatos">Candidatos</th>
+            <th data-sort="estado">Estado</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <p style="font-size:32px;">⏱️</p>
+        <p>No hay vacantes abiertas con estos filtros.</p>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i style="background:#bbf7d0"></i>0–14 días</span>
+      <span><i style="background:#fde68a"></i>15–30 días</span>
+      <span><i style="background:#fed7aa"></i>31–60 días</span>
+      <span><i style="background:#fecaca"></i>Más de 60 días</span>
+    </div>
+  </div>
+
+  <!-- MODAL NUEVA VACANTE -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <h2>Nueva vacante</h2>
+      <form onsubmit="saveVacante(event)">
+        <div class="form-group">
+          <label>Título del puesto *</label>
+          <input type="text" id="f_titulo" required>
+        </div>
+        <div class="form-group">
+          <label>Cliente *</label>
+          <select id="f_empresa" required><option value="">Seleccionar cliente...</option></select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Fecha en que la recibimos *</label>
+            <input type="date" id="f_fecha_apertura" required>
+          </div>
+          <div class="form-group">
+            <label>Fecha límite</label>
+            <input type="date" id="f_fecha_limite">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Estado</label>
+          <select id="f_estado">
+            <option value="abierta">Abierta</option>
+            <option value="en_proceso">En proceso</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Notas</label>
+          <textarea id="f_notas" placeholder="Contacto del cliente, condiciones, etc."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="saveBtn">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://bohkpbkktcnwsglvcrax.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvaGtwYmtrdGNud3NnbHZjcmF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NjY0MjYsImV4cCI6MjA5NjM0MjQyNn0.yW7atZCGHqipQ-KE-UH5J3DPlXvud5lzf5LMs3J9YzA';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const ESTADOS = { abierta: 'Abierta', en_proceso: 'En proceso', cubierta: 'Cubierta', cancelada: 'Cancelada' };
+    let vacantes = [];
+    let empresas = [];
+    let sortKey = 'dias', sortDir = -1;
+
+    let initialized = false;
+    sb.auth.onAuthStateChange((event, session) => {
+      if (!session) window.location.href = 'login.html';
+      else if (!initialized) { initialized = true; init(); }
+    });
+
+    async function logout() { await sb.auth.signOut(); window.location.href = 'login.html'; }
+
+    function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    function todayISO() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    function daysBetween(fromISO, toISO) {
+      if (!fromISO) return null;
+      const a = new Date(fromISO + 'T00:00:00'), b = new Date(toISO + 'T00:00:00');
+      return Math.round((b - a) / 86400000);
+    }
+    function fmtDate(iso) {
+      return iso ? new Date(iso + 'T00:00:00').toLocaleDateString('es-DO', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+    }
+    function daysClass(d) {
+      if (d === null) return 'd-none';
+      if (d < 15) return 'd-ok';
+      if (d <= 30) return 'd-mid';
+      if (d <= 60) return 'd-high';
+      return 'd-crit';
+    }
+
+    async function init() {
+      document.querySelectorAll('th[data-sort]').forEach(th => th.addEventListener('click', () => {
+        const k = th.dataset.sort;
+        if (sortKey === k) sortDir = -sortDir; else { sortKey = k; sortDir = (k === 'dias' || k === 'candidatos') ? -1 : 1; }
+        render();
+      }));
+      await Promise.all([loadEmpresas(), loadVacantes()]);
+    }
+
+    async function loadEmpresas() {
+      const { data } = await sb.from('empresas').select('id, nombre').order('nombre');
+      empresas = data || [];
+      const opts = empresas.map(e => `<option value="${e.id}">${esc(e.nombre)}</option>`).join('');
+      document.getElementById('f_empresa').innerHTML = '<option value="">Seleccionar cliente...</option>' + opts;
+    }
+
+    async function loadVacantes() {
+      const { data, error } = await sb
+        .from('posiciones')
+        .select('id, titulo, empresa_id, fecha_apertura, fecha_limite, estado, notas, ubicacion, empresas(nombre)')
+        .in('estado', ['abierta', 'en_proceso']);
+      if (error) { console.error(error); toast('Error cargando vacantes'); return; }
+      vacantes = data || [];
+
+      // Conteo de candidatos asignados (tabla puente si existe; si no, candidatos.posicion_id)
+      const ids = vacantes.map(v => v.id);
+      const counts = {};
+      if (ids.length) {
+        let res = await sb.from('candidato_posicion').select('posicion_id').in('posicion_id', ids);
+        if (res.error) res = await sb.from('candidatos').select('posicion_id').in('posicion_id', ids);
+        (res.data || []).forEach(r => { counts[r.posicion_id] = (counts[r.posicion_id] || 0) + 1; });
+      }
+      vacantes.forEach(v => { v.candidatos = counts[v.id] || 0; });
+
+      // Filtro de clientes con solo los que tienen vacantes abiertas
+      const conVacantes = [...new Map(vacantes.filter(v => v.empresa_id).map(v => [v.empresa_id, v.empresas?.nombre || ''])).entries()]
+        .sort((a, b) => a[1].localeCompare(b[1]));
+      const sel = document.getElementById('filterEmpresa');
+      const cur = sel.value;
+      sel.innerHTML = '<option value="">Todos los clientes</option>' + conVacantes.map(([id, n]) => `<option value="${id}">${esc(n)}</option>`).join('');
+      sel.value = cur;
+      render();
+    }
+
+    function render() {
+      const today = todayISO();
+      const q = document.getElementById('searchInput').value.toLowerCase().trim();
+      const fe = document.getElementById('filterEstado').value;
+      const fc = document.getElementById('filterEmpresa').value;
+
+      vacantes.forEach(v => { v.dias = daysBetween(v.fecha_apertura, today); v.empresa = v.empresas?.nombre || ''; });
+
+      // KPIs sobre todas las vacantes abiertas (sin filtros)
+      const withDays = vacantes.filter(v => v.dias !== null);
+      document.getElementById('kTotal').textContent = vacantes.length;
+      const nProc = vacantes.filter(v => v.estado === 'en_proceso').length;
+      document.getElementById('kTotalSub').textContent = `${vacantes.length - nProc} abiertas · ${nProc} en proceso`;
+      document.getElementById('kProm').textContent = withDays.length ? Math.round(withDays.reduce((s, v) => s + v.dias, 0) / withDays.length) : '—';
+      const oldest = withDays.slice().sort((a, b) => b.dias - a.dias)[0];
+      document.getElementById('kMax').textContent = oldest ? `${oldest.dias} d` : '—';
+      document.getElementById('kMaxSub').textContent = oldest ? `${oldest.titulo} · ${oldest.empresa}` : ' ';
+      const nOld = withDays.filter(v => v.dias > 30).length;
+      document.getElementById('kOld').textContent = nOld;
+      document.getElementById('kOldBox').classList.toggle('alert', nOld > 0);
+
+      let rows = vacantes.filter(v =>
+        (!q || v.titulo.toLowerCase().includes(q) || v.empresa.toLowerCase().includes(q)) &&
+        (!fe || v.estado === fe) &&
+        (!fc || v.empresa_id === fc));
+
+      rows.sort((a, b) => {
+        let x = a[sortKey], y = b[sortKey];
+        if (x === null || x === undefined || x === '') return 1;
+        if (y === null || y === undefined || y === '') return -1;
+        if (typeof x === 'string') return x.localeCompare(y) * sortDir;
+        return (x - y) * sortDir;
+      });
+
+      document.querySelectorAll('th[data-sort]').forEach(th => {
+        const base = th.textContent.replace(/ [▲▼]$/, '');
+        th.textContent = base + (th.dataset.sort === sortKey ? (sortDir === 1 ? ' ▲' : ' ▼') : '');
+        th.classList.toggle('sorted', th.dataset.sort === sortKey);
+      });
+
+      const tbody = document.getElementById('tbody');
+      document.getElementById('emptyState').style.display = rows.length ? 'none' : 'block';
+      tbody.innerHTML = rows.map(v => {
+        let limite = '<span class="muted">—</span>';
+        if (v.fecha_limite) {
+          const r = daysBetween(today, v.fecha_limite);
+          const cls = r < 0 ? 'limit-late' : (r <= 7 ? 'limit-soon' : '');
+          const txt = r < 0 ? `vencida hace ${-r} d` : (r === 0 ? 'vence hoy' : `faltan ${r} d`);
+          limite = `${fmtDate(v.fecha_limite)}<div class="v-sub ${cls}">${txt}</div>`;
+        }
+        const diasTxt = v.dias === null ? 'Sin fecha' : (v.dias === 1 ? '1 día' : `${v.dias} días`);
+        return `<tr>
+          <td><div class="v-title"><a href="posiciones.html" title="Abrir en Posiciones">${esc(v.titulo)}</a></div>${v.ubicacion ? `<div class="v-sub">${esc(v.ubicacion)}</div>` : ''}</td>
+          <td>${esc(v.empresa) || '<span class="muted">Sin cliente</span>'}</td>
+          <td><input type="date" class="date-input" value="${v.fecha_apertura || ''}" max="${today}" onchange="updateField('${v.id}', 'fecha_apertura', this.value)"></td>
+          <td><span class="days ${daysClass(v.dias)}">${diasTxt}</span></td>
+          <td>${limite}</td>
+          <td class="num">${v.candidatos}</td>
+          <td><select class="estado-select" onchange="updateField('${v.id}', 'estado', this.value)">
+            ${Object.entries(ESTADOS).map(([k, l]) => `<option value="${k}" ${k === v.estado ? 'selected' : ''}>${l}</option>`).join('')}
+          </select></td>
+        </tr>`;
+      }).join('');
+    }
+
+    async function updateField(id, field, value) {
+      const { error } = await sb.from('posiciones').update({ [field]: value || null, updated_at: new Date().toISOString() }).eq('id', id);
+      if (error) { console.error(error); toast('No se pudo guardar'); return; }
+      const v = vacantes.find(x => x.id === id);
+      if (field === 'estado' && (value === 'cubierta' || value === 'cancelada')) {
+        vacantes = vacantes.filter(x => x.id !== id);
+        toast(`Vacante marcada como ${ESTADOS[value].toLowerCase()}${v && v.dias !== null ? ` tras ${v.dias} días` : ''}`);
+      } else {
+        if (v) v[field] = value || null;
+        toast('Guardado');
+      }
+      render();
+    }
+
+    function openModal() {
+      document.getElementById('f_titulo').value = '';
+      document.getElementById('f_empresa').value = '';
+      document.getElementById('f_fecha_apertura').value = todayISO();
+      document.getElementById('f_fecha_apertura').max = todayISO();
+      document.getElementById('f_fecha_limite').value = '';
+      document.getElementById('f_estado').value = 'abierta';
+      document.getElementById('f_notas').value = '';
+      document.getElementById('modal').classList.add('active');
+      document.getElementById('f_titulo').focus();
+    }
+    function closeModal() { document.getElementById('modal').classList.remove('active'); }
+
+    async function saveVacante(e) {
+      e.preventDefault();
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true; btn.textContent = 'Guardando...';
+      const row = {
+        titulo: document.getElementById('f_titulo').value.trim(),
+        empresa_id: document.getElementById('f_empresa').value || null,
+        fecha_apertura: document.getElementById('f_fecha_apertura').value,
+        fecha_limite: document.getElementById('f_fecha_limite').value || null,
+        estado: document.getElementById('f_estado').value,
+        notas: document.getElementById('f_notas').value.trim() || null
+      };
+      const { error } = await sb.from('posiciones').insert(row);
+      btn.disabled = false; btn.textContent = 'Guardar';
+      if (error) { console.error(error); toast('No se pudo crear la vacante'); return; }
+      closeModal();
+      toast('Vacante creada');
+      loadVacantes();
+    }
+
+    document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2600);
+    }
+  </script>
+</body>
+</html>

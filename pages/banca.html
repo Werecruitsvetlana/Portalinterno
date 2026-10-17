@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banca de Candidatos — We Recruit DR</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f7fa;
+      color: #1a1a1a;
+    }
+
+    /* NAV LATERAL */
+    .sidebar {
+      position: fixed;
+      left: 0; top: 0;
+      width: 220px;
+      height: 100vh;
+      background: #063958;
+      padding: 24px 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-logo {
+      color: #CEE4CC;
+      font-size: 18px;
+      font-weight: 700;
+      padding: 0 20px;
+      margin-bottom: 32px;
+    }
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 20px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.15s;
+    }
+    .sidebar a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .sidebar a.active { background: rgba(255,255,255,0.12); color: #CEE4CC; font-weight: 600; }
+    .sidebar-bottom {
+      margin-top: auto;
+      padding: 0 20px;
+    }
+    .sidebar-bottom button {
+      width: 100%;
+      padding: 10px;
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.7);
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .sidebar-bottom button:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+    /* CONTENIDO */
+    .main { margin-left: 220px; padding: 32px; }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .page-header h1 { font-size: 24px; color: #063958; }
+
+    /* CONTROLES */
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 14px;
+      border: 1.5px solid #dde5ed;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+    .search-input:focus { border-color: #0F6B9F; }
+    .filter-select {
+      padding: 10px 14px;
+      border: 1.5px solid #dde5ed;
+      border-radius: 8px;
+      font-size: 14px;
+      background: #fff;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* BOTONES */
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-primary { background: #0F6B9F; color: #fff; }
+    .btn-primary:hover { background: #063958; }
+    .btn-secondary { background: #e8ecf1; color: #063958; }
+    .btn-secondary:hover { background: #dde5ed; }
+    .btn-danger { background: #fef2f2; color: #b91c1c; }
+    .btn-danger:hover { background: #fde8e8; }
+    .btn-sm { padding: 6px 14px; font-size: 13px; }
+
+    /* TABLA */
+    .table-container {
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: #f8f9fb;
+      border-bottom: 1px solid #eee;
+    }
+    td {
+      padding: 12px 16px;
+      font-size: 14px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    tr:hover { background: #f8f9fb; }
+    tr:last-child td { border-bottom: none; }
+
+    .candidate-name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #CEE4CC;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: #063958;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .stars { color: #f59e0b; font-size: 14px; letter-spacing: 1px; }
+    .stars .empty { color: #ddd; }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-disc { background: #ede9fe; color: #6d28d9; }
+    .badge-portal { background: #e0f2fe; color: #0369a1; }
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #888;
+    }
+    .empty-state p { margin-top: 8px; font-size: 14px; }
+    .link { color: #0F6B9F; text-decoration: none; cursor: pointer; }
+    .link:hover { text-decoration: underline; }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      padding: 32px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal h2 {
+      font-size: 20px;
+      color: #063958;
+      margin-bottom: 24px;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #063958;
+      margin-bottom: 5px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid #dde5ed;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: #0F6B9F; }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+    .form-full { grid-column: 1 / -1; }
+
+    /* EVALUACIÓN */
+    .eval-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      background: #f8f9fb;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .eval-item label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+      display: block;
+    }
+    .eval-item select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #dde5ed;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .star-input { cursor: pointer; font-size: 22px; }
+    .star-input span { color: #ddd; transition: color 0.1s; }
+    .star-input span.active { color: #f59e0b; }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 20px;
+      background: #063958;
+      color: #fff;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 200;
+      display: none;
+    }
+    .toast.show { display: block; }
+    .hero { background: linear-gradient(120deg,#063958,#0F6B9F); border-radius: 16px; padding: 26px 28px; color: #fff; margin-bottom: 20px; }
+    .hero h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+    .hero p { font-size: 13px; opacity: .85; margin-bottom: 16px; }
+    .hero-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .big-search { flex: 1; min-width: 260px; padding: 13px 16px 13px 42px; border: none; border-radius: 12px; font-size: 15px; outline: none; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%230F6B9F' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='8' cy='8' r='6'/%3E%3Cpath d='M13 13l4 4'/%3E%3C/svg%3E") no-repeat 14px center; color: #1a1a1a; }
+    .seg { display: inline-flex; background: rgba(255,255,255,.16); border-radius: 12px; padding: 4px; }
+    .seg button { border: none; background: transparent; color: #fff; padding: 9px 14px; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .seg button.on { background: #fff; color: #063958; }
+    .stats { display: flex; gap: 22px; margin-top: 16px; font-size: 13px; opacity: .92; flex-wrap: wrap; }
+    .stats b { font-size: 18px; margin-right: 5px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(210px,1fr)); gap: 16px; }
+    .folder { background: #fff; border-radius: 14px; padding: 18px 18px 16px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,.06); border: 1px solid transparent; transition: transform .12s, box-shadow .12s, border-color .12s; position: relative; }
+    .folder:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(6,57,88,.13); border-color: #CEE4CC; }
+    .folder-ico { width: 54px; height: 40px; position: relative; margin-bottom: 14px; }
+    .folder-ico::before { content: ''; position: absolute; left: 0; top: 0; width: 24px; height: 10px; background: #0F6B9F; border-radius: 5px 5px 0 0; }
+    .folder-ico::after { content: ''; position: absolute; left: 0; top: 7px; width: 54px; height: 33px; background: linear-gradient(180deg,#1b82bb,#0F6B9F); border-radius: 3px 7px 7px 7px; }
+    .folder-name { font-size: 14.5px; font-weight: 700; color: #063958; line-height: 1.25; min-height: 36px; }
+    .folder-meta { font-size: 12px; color: #7a8794; margin-top: 8px; }
+    .folder-meta b { color: #063958; font-size: 15px; }
+    .pill-new { position: absolute; top: 14px; right: 14px; background: #CEE4CC; color: #1f5a2a; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+    .crumb { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+    .crumb .back { border: none; background: #fff; color: #063958; font-weight: 600; font-size: 13px; padding: 8px 14px; border-radius: 10px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+    .crumb h2 { font-size: 19px; color: #063958; }
+    .crumb .count { font-size: 13px; color: #7a8794; }
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .list { display: flex; flex-direction: column; gap: 8px; }
+    .card { background: #fff; border-radius: 12px; padding: 12px 16px; display: grid; grid-template-columns: 44px minmax(0,1.6fr) minmax(0,1fr) 120px 96px; gap: 14px; align-items: center; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,.05); border: 1px solid transparent; }
+    .card:hover { border-color: #CEE4CC; }
+    .card.sel { border-color: #0F6B9F; box-shadow: 0 0 0 2px rgba(15,107,159,.15); }
+    .ini { width: 44px; height: 44px; border-radius: 50%; background: #e7f1f7; color: #0F6B9F; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+    .c-name { font-weight: 700; color: #063958; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .c-sub { font-size: 12px; color: #7a8794; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+    .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; background: #eef2f6; color: #4a5a6a; margin-right: 4px; }
+    .tag.rd { background: #CEE4CC; color: #1f5a2a; }
+    .est { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-align: center; }
+    .est.nuevo { background: #e7f1f7; color: #0F6B9F; } .est.revisado { background: #eef2f6; color: #4a5a6a; } .est.contactado { background: #fff4d6; color: #8a6100; }
+    .est.en_terna { background: #CEE4CC; color: #1f5a2a; } .est.descartado { background: #fde8e8; color: #a12626; }
+    .drawer { position: fixed; top: 0; right: 0; width: min(760px,56vw); height: 100vh; background: #fff; box-shadow: -8px 0 30px rgba(6,57,88,.18); transform: translateX(105%); transition: transform .2s; z-index: 50; display: flex; flex-direction: column; }
+    .drawer.open { transform: none; }
+    .d-head { padding: 16px 20px; border-bottom: 1px solid #edf0f3; display: flex; gap: 12px; align-items: flex-start; }
+    .d-head h3 { font-size: 17px; color: #063958; }
+    .d-actions { display: flex; gap: 8px; flex-wrap: wrap; padding: 10px 20px; border-bottom: 1px solid #edf0f3; align-items: center; }
+    .d-actions a, .d-actions button, .d-actions select { font-size: 12.5px; }
+    .d-body { flex: 1; background: #f0f3f6; min-height: 0; }
+    .d-body iframe, .d-body img { width: 100%; height: 100%; border: none; object-fit: contain; }
+    .d-foot { padding: 10px 20px; border-top: 1px solid #edf0f3; display: flex; gap: 8px; align-items: center; }
+    .d-foot input { flex: 1; padding: 9px 12px; border: 1px solid #dde3ea; border-radius: 8px; font-size: 13px; }
+    .x { margin-left: auto; border: none; background: #eef2f6; width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer; color: #063958; }
+    .more { text-align: center; margin: 16px 0; }
+    .tiny { font-size: 12px; color: #7a8794; margin-top: 26px; text-align: center; }
+    .tiny span { color: #0F6B9F; cursor: pointer; text-decoration: underline; }
+    @media (max-width: 1100px) { .card { grid-template-columns: 44px minmax(0,1fr) 96px; } .card .c-tags, .card .c-date { display: none; } }
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo">We Recruit DR</div>
+    <a href="index.html">📊 Dashboard</a>
+    <a href="candidatos.html">👤 Candidatos</a>
+    <a href="banca.html" class="active">🗂️ Banca de Candidatos</a>
+    <a href="posiciones.html">💼 Posiciones</a>
+    <a href="vacantes-abiertas.html">⏱️ Vacantes Abiertas</a>
+    <a href="ternas.html">📋 Ternas</a>
+    <a href="empresas.html">🏢 Empresas</a>
+    <a href="freelancers.html">🎨 Freelancers</a>
+    <div class="sidebar-bottom">
+      <button onclick="logout()">Cerrar sesión</button>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="hero">
+      <h1>Banca de Candidatos</h1>
+      <p>Todos los CVs que llegan al correo, ordenados por posición.</p>
+      <div class="hero-row">
+        <input class="big-search" id="q" placeholder="Buscar en todos los CVs: nombre, correo, o una palabra del CV (SAP, inglés, Brugal…)" oninput="buscarLuego()">
+        <div class="seg" id="segPais">
+          <button data-v="RD" class="on" onclick="setPais('RD')">Solo RD</button>
+          <button data-v="" onclick="setPais('')">Todos los países</button>
+        </div>
+      </div>
+      <div class="stats"><span><b id="kTotal">0</b>CVs</span><span><b id="kRD">0</b>en República Dominicana</span><span><b id="kPos">0</b>posiciones</span><span><b id="kNew">0</b>recibidos esta semana</span></div>
+    </div>
+
+    <div id="importBox" style="display:none;background:#fff;border-radius:10px;padding:14px 18px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+      <div style="font-size:13px;color:#063958;font-weight:600;" id="importMsg">Preparando…</div>
+      <div style="height:8px;background:#e8ecf1;border-radius:6px;margin-top:8px;overflow:hidden;"><div id="importBar" style="height:100%;width:0;background:#0F6B9F;transition:width .3s;"></div></div>
+      <div style="font-size:12px;color:#888;margin-top:6px;">No cierres esta pestaña mientras se suben los archivos. Si se interrumpe, vuelve a importar la misma carpeta y continúa donde quedó.</div>
+    </div>
+
+    <div id="vHome">
+      <div class="grid" id="grid"></div>
+      <div class="empty-state" id="emptyHome" style="display:none;"><p style="font-size:32px;">🗂️</p><p id="emptyHomeMsg">Todavía no hay CVs en la banca.</p></div>
+      <div class="tiny">¿Tienes una carpeta nueva de CVs en tu computadora? <span onclick="document.getElementById('importDir').click()">Importar carpeta de CVs</span>
+        <input type="file" id="importDir" webkitdirectory multiple style="display:none" onchange="importar(this.files)"></div>
+    </div>
+
+    <div id="vList" style="display:none;">
+      <div class="crumb">
+        <button class="back" onclick="irInicio()">← Todas las posiciones</button>
+        <h2 id="lTitle"></h2><span class="count" id="lCount"></span>
+      </div>
+      <div class="filters">
+        <select class="filter-select" id="fCiudad" onchange="aplicar()"><option value="">Todas las ciudades</option></select>
+        <select class="filter-select" id="fNivel" onchange="aplicar()"><option value="">Todos los niveles</option></select>
+        <select class="filter-select" id="fEstado" onchange="aplicar()">
+          <option value="">Todos los estados</option><option value="nuevo">Nuevo</option><option value="revisado">Revisado</option><option value="contactado">Contactado</option><option value="en_terna">En terna</option><option value="descartado">Descartado</option>
+        </select>
+        <select class="filter-select" id="fFecha" onchange="aplicar()">
+          <option value="">Cualquier fecha</option><option value="7">Recibidos esta semana</option><option value="30">Últimos 30 días</option><option value="90">Últimos 3 meses</option>
+        </select>
+        <select class="filter-select" id="fOrden" onchange="aplicar()"><option value="fecha">Más recientes primero</option><option value="nombre">Por nombre (A–Z)</option></select>
+      </div>
+      <div class="list" id="list"></div>
+      <div class="empty-state" id="emptyList" style="display:none;"><p style="font-size:32px;">🔍</p><p>No hay CVs con esa búsqueda o esos filtros.</p></div>
+      <div class="more"><button class="btn btn-secondary" id="btnMas" onclick="mas()">Ver más</button></div>
+    </div>
+  </div>
+
+  <aside class="drawer" id="drawer">
+    <div class="d-head">
+      <div style="min-width:0;"><h3 id="dName"></h3><div class="c-sub" id="dSub"></div></div>
+      <button class="x" onclick="cerrar()" title="Cerrar">✕</button>
+    </div>
+    <div class="d-actions">
+      <button class="btn btn-secondary btn-sm" onclick="mover(-1)">↑ Anterior</button>
+      <button class="btn btn-secondary btn-sm" onclick="mover(1)">↓ Siguiente</button>
+      <a class="btn btn-secondary btn-sm" id="dWa" target="_blank" rel="noopener" style="text-decoration:none;">WhatsApp</a>
+      <a class="btn btn-secondary btn-sm" id="dMail" style="text-decoration:none;">Correo</a>
+      <a class="btn btn-secondary btn-sm" id="dOpen" target="_blank" rel="noopener" style="text-decoration:none;">Abrir en pestaña</a>
+      <select class="filter-select" id="dEstado" style="padding:6px 8px;margin-left:auto;" onchange="guardar(actual,'estado',this.value)">
+        <option value="nuevo">Nuevo</option><option value="revisado">Revisado</option><option value="contactado">Contactado</option><option value="en_terna">En terna</option><option value="descartado">Descartado</option>
+      </select>
+    </div>
+    <div class="d-actions" style="background:#f8fafb;">
+      <span style="font-size:12px;color:#7a8794;">Posición:</span>
+      <select class="filter-select" id="dPos" style="padding:6px 8px;max-width:270px;" onchange="cambiarPosicion(this.value)"></select>
+      <span style="font-size:12px;color:#7a8794;margin-left:8px;">Nombre:</span>
+      <input type="text" id="dNom" style="flex:1;min-width:160px;padding:6px 10px;border:1px solid #dde3ea;border-radius:8px;font-size:12.5px;" onchange="cambiarNombre(this.value)">
+    </div>
+    <div class="d-body" id="dBody"></div>
+    <div class="d-foot"><input type="text" id="dNotas" placeholder="Nota sobre este candidato…" onchange="guardar(actual,'notas',this.value)"></div>
+  </aside>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://bohkpbkktcnwsglvcrax.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvaGtwYmtrdGNud3NnbHZjcmF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NjY0MjYsImV4cCI6MjA5NjM0MjQyNn0.yW7atZCGHqipQ-KE-UH5J3DPlXvud5lzf5LMs3J9YzA';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const BUCKET = 'banca-cvs', POR_PAG = 40;
+    const COLS = 'id,nombre,posicion,nivel,pais,ciudad,telefono,email,fecha_correo,asunto,tipo,cv_path,cv_nombre,cv_ok,estado,notas';
+    const ESTADOS = { nuevo: 'Nuevo', revisado: 'Revisado', contactado: 'Contactado', en_terna: 'En terna', descartado: 'Descartado' };
+    let todos = [], vista = [], mostrados = 0, pais = 'RD', carpeta = null, actual = null, idsTexto = null, tBuscar = null, initialized = false;
+
+    sb.auth.onAuthStateChange((event, session) => {
+      if (!session) { window.location.href = 'login.html'; }
+      else if (!initialized) { initialized = true; cargar(); }
+    });
+    async function logout() { await sb.auth.signOut(); window.location.href = 'login.html'; }
+    function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const norm = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const hace = d => { if (!d) return 9999; return (Date.now() - new Date(d + 'T12:00:00').getTime()) / 864e5; };
+    const fechaBonita = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('es-DO', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+    const enPais = c => !pais || c.pais === 'RD';
+
+    async function cargar() {
+      todos = [];
+      for (let from = 0; ; from += 1000) {
+        const { data, error } = await sb.from('banca_candidatos').select(COLS).order('fecha_correo', { ascending: false, nullsFirst: false }).order('id').range(from, from + 999);
+        if (error) { document.getElementById('emptyHome').style.display = 'block'; document.getElementById('emptyHomeMsg').textContent = 'No se pudo cargar la banca: ' + error.message; return; }
+        todos = todos.concat(data);
+        if (data.length < 1000) break;
+      }
+      pintarInicio();
+      if (carpeta !== null || document.getElementById('q').value.trim()) aplicar();
+    }
+
+    function setPais(v) { pais = v; document.querySelectorAll('#segPais button').forEach(b => b.classList.toggle('on', b.dataset.v === v)); pintarInicio(); if (document.getElementById('vList').style.display !== 'none') aplicar(); }
+
+    function pintarInicio() {
+      const base = todos.filter(enPais), g = {};
+      base.forEach(c => { const p = c.posicion || 'Sin clasificar'; (g[p] = g[p] || { n: 0, nuevos: 0 }).n++; if (hace(c.fecha_correo) <= 7) g[p].nuevos++; });
+      const pos = Object.keys(g).sort((a, b) => (a === 'Sin clasificar') - (b === 'Sin clasificar') || g[b].n - g[a].n);
+      document.getElementById('kTotal').textContent = base.length.toLocaleString();
+      document.getElementById('kRD').textContent = todos.filter(c => c.pais === 'RD').length.toLocaleString();
+      document.getElementById('kPos').textContent = pos.length;
+      document.getElementById('kNew').textContent = base.filter(c => hace(c.fecha_correo) <= 7).length.toLocaleString();
+      document.getElementById('emptyHome').style.display = base.length ? 'none' : 'block';
+      document.getElementById('grid').innerHTML = pos.map(p => `
+        <div class="folder" onclick="abrirCarpeta('${esc(p).replace(/'/g, "\\'")}')">
+          ${g[p].nuevos ? `<span class="pill-new">${g[p].nuevos} nuevo${g[p].nuevos > 1 ? 's' : ''}</span>` : ''}
+          <div class="folder-ico"></div>
+          <div class="folder-name">${esc(p)}</div>
+          <div class="folder-meta"><b>${g[p].n.toLocaleString()}</b> CV${g[p].n === 1 ? '' : 's'}</div>
+        </div>`).join('');
+    }
+
+    function ver(v) { document.getElementById('vHome').style.display = v === 'home' ? '' : 'none'; document.getElementById('vList').style.display = v === 'list' ? '' : 'none'; }
+    function irInicio() { carpeta = null; document.getElementById('q').value = ''; idsTexto = null; cerrar(); ver('home'); window.scrollTo(0, 0); }
+    function abrirCarpeta(p) { carpeta = p; ['fCiudad', 'fNivel', 'fEstado', 'fFecha'].forEach(i => document.getElementById(i).value = ''); aplicar(); window.scrollTo(0, 0); }
+
+    function buscarLuego() {
+      clearTimeout(tBuscar);
+      const q = document.getElementById('q').value.trim();
+      if (!q) { idsTexto = null; if (carpeta === null) return irInicio(); return aplicar(); }
+      aplicar();
+      tBuscar = setTimeout(async () => {
+        const palabras = norm(q).split(/\s+/).filter(w => w.length >= 3).slice(0, 5);
+        if (!palabras.length) return;
+        let cons = sb.from('banca_candidatos').select('id');
+        palabras.forEach(w => { cons = cons.ilike('texto', '%' + w.replace(/[%_]/g, '') + '%'); });
+        const { data, error } = await cons.limit(2000);
+        if (error || document.getElementById('q').value.trim() !== q) return;
+        idsTexto = new Set(data.map(d => d.id)); aplicar();
+      }, 450);
+    }
+
+    function aplicar() {
+      const q = norm(document.getElementById('q').value.trim()), palabras = q.split(/\s+/).filter(Boolean);
+      const ci = document.getElementById('fCiudad').value, n = document.getElementById('fNivel').value, e = document.getElementById('fEstado').value,
+            f = document.getElementById('fFecha').value, ord = document.getElementById('fOrden').value;
+      const enAlcance = todos.filter(c => enPais(c) && (carpeta === null || (c.posicion || 'Sin clasificar') === carpeta));
+      const opc = (id, vals, todas) => { const el = document.getElementById(id), v = el.value; el.innerHTML = `<option value="">${todas}</option>` + vals.map(x => `<option>${esc(x)}</option>`).join(''); el.value = v; };
+      opc('fCiudad', [...new Set(enAlcance.map(c => c.ciudad).filter(Boolean))].sort(), 'Todas las ciudades');
+      opc('fNivel', [...new Set(enAlcance.map(c => c.nivel).filter(Boolean))].sort(), 'Todos los niveles');
+      vista = enAlcance.filter(c => {
+        if (ci && c.ciudad !== ci) return false; if (n && c.nivel !== n) return false; if (e && (c.estado || 'nuevo') !== e) return false;
+        if (f && hace(c.fecha_correo) > +f) return false;
+        if (!palabras.length) return true;
+        const propio = norm([c.nombre, c.email, c.telefono, c.asunto, c.posicion, c.ciudad, c.notas].join(' '));
+        return palabras.every(w => propio.includes(w)) || (idsTexto && idsTexto.has(c.id));
+      });
+      if (ord === 'nombre') vista.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+      else vista.sort((a, b) => (b.fecha_correo || '').localeCompare(a.fecha_correo || ''));
+      document.getElementById('lTitle').textContent = carpeta !== null ? carpeta : 'Resultados de la búsqueda';
+      document.getElementById('lCount').textContent = `${vista.length.toLocaleString()} CV${vista.length === 1 ? '' : 's'}` + (palabras.length && carpeta !== null ? ' con esa búsqueda' : '');
+      mostrados = 0; document.getElementById('list').innerHTML = ''; ver('list'); mas();
+      document.getElementById('emptyList').style.display = vista.length ? 'none' : 'block';
+    }
+
+    function tarjeta(c) {
+      const ini = c.nombre.split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+      const est = c.estado || 'nuevo';
+      return `<div class="card" id="c-${c.id}" onclick="abrir('${c.id}')">
+        <div class="ini">${esc(ini)}</div>
+        <div style="min-width:0;"><div class="c-name">${esc(c.nombre)}</div><div class="c-sub">${esc([c.email, c.telefono].filter(Boolean).join(' · ') || c.asunto || '')}</div></div>
+        <div class="c-tags" style="min-width:0;">${c.pais === 'RD' ? `<span class="tag rd">${esc(c.ciudad || 'RD')}</span>` : `<span class="tag">${esc(c.pais || '—')}</span>`}${c.nivel ? `<span class="tag">${esc(c.nivel.split('/')[0])}</span>` : ''}${carpeta === null ? `<div class="c-sub">${esc(c.posicion || '')}</div>` : ''}</div>
+        <div class="c-date c-sub">${esc(fechaBonita(c.fecha_correo))}</div>
+        <div class="est ${est}">${ESTADOS[est] || est}</div>
+      </div>`;
+    }
+    function mas() {
+      const lote = vista.slice(mostrados, mostrados + POR_PAG); mostrados += lote.length;
+      document.getElementById('list').insertAdjacentHTML('beforeend', lote.map(tarjeta).join(''));
+      document.getElementById('btnMas').style.display = mostrados < vista.length ? '' : 'none';
+      document.getElementById('btnMas').textContent = `Ver más (${(vista.length - mostrados).toLocaleString()} restantes)`;
+    }
+
+    async function abrir(id) {
+      const c = todos.find(x => x.id === id); if (!c) return; actual = id;
+      document.querySelectorAll('.card.sel').forEach(x => x.classList.remove('sel'));
+      const el = document.getElementById('c-' + id); if (el) { el.classList.add('sel'); el.scrollIntoView({ block: 'nearest' }); }
+      document.getElementById('dName').textContent = c.nombre;
+      document.getElementById('dSub').textContent = [c.posicion, c.pais === 'RD' ? (c.ciudad || 'RD') : c.pais, c.email, c.telefono].filter(Boolean).join(' · ');
+      document.getElementById('dEstado').value = c.estado || 'nuevo'; document.getElementById('dNotas').value = c.notas || '';
+      const posTodas = [...new Set(todos.map(x => x.posicion || 'Sin clasificar'))].sort();
+      document.getElementById('dPos').innerHTML = posTodas.map(x => `<option ${x === (c.posicion || 'Sin clasificar') ? 'selected' : ''}>${esc(x)}</option>`).join('');
+      document.getElementById('dNom').value = c.nombre;
+      const tel = (c.telefono || '').replace(/\D/g, ''), wa = document.getElementById('dWa'), ml = document.getElementById('dMail'), op = document.getElementById('dOpen');
+      wa.style.display = tel.length >= 10 ? '' : 'none'; if (tel.length >= 10) wa.href = 'https://wa.me/' + (tel.length === 10 ? '1' + tel : tel);
+      ml.style.display = c.email ? '' : 'none'; if (c.email) ml.href = 'mailto:' + c.email;
+      const body = document.getElementById('dBody'); body.innerHTML = '<div class="empty-state"><p>Cargando CV…</p></div>'; op.style.display = 'none';
+      document.getElementById('drawer').classList.add('open');
+      if (!c.cv_ok) { body.innerHTML = '<div class="empty-state"><p style="font-size:32px;">📄</p><p>El archivo de este CV todavía no se ha subido al portal.</p></div>'; return; }
+      const { data, error } = await sb.storage.from(BUCKET).createSignedUrl(c.cv_path, 3600);
+      if (actual !== id) return;
+      if (error) { body.innerHTML = `<div class="empty-state"><p>No se pudo abrir el CV: ${esc(error.message)}</p></div>`; return; }
+      op.href = data.signedUrl; op.style.display = '';
+      const ext = c.cv_path.split('.').pop().toLowerCase();
+      if (ext === 'pdf') body.innerHTML = `<iframe src="${data.signedUrl}#view=FitH" title="CV"></iframe>`;
+      else if (['jpg', 'jpeg', 'png'].includes(ext)) body.innerHTML = `<img src="${data.signedUrl}" alt="CV">`;
+      else body.innerHTML = `<div class="empty-state"><p style="font-size:32px;">📝</p><p>Este CV está en Word y no se puede ver aquí.</p><p><a class="btn btn-primary" style="text-decoration:none;display:inline-block;margin-top:10px;" href="${data.signedUrl}" target="_blank" rel="noopener">Descargar CV</a></p></div>`;
+    }
+    function cerrar() { document.getElementById('drawer').classList.remove('open'); document.getElementById('dBody').innerHTML = ''; actual = null; document.querySelectorAll('.card.sel').forEach(x => x.classList.remove('sel')); }
+    function mover(d) { const i = vista.findIndex(c => c.id === actual); const j = i + d; if (j < 0 || j >= vista.length) return; if (j >= mostrados) mas(); abrir(vista[j].id); }
+    document.addEventListener('keydown', e => {
+      if (!document.getElementById('drawer').classList.contains('open') || ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+      if (e.key === 'ArrowDown') { e.preventDefault(); mover(1); } else if (e.key === 'ArrowUp') { e.preventDefault(); mover(-1); } else if (e.key === 'Escape') cerrar();
+    });
+
+    async function guardar(id, campo, valor) {
+      if (!id) return;
+      const { error } = await sb.from('banca_candidatos').update({ [campo]: valor, updated_at: new Date().toISOString() }).eq('id', id);
+      if (error) return showToast('No se pudo guardar: ' + error.message);
+      const c = todos.find(x => x.id === id); if (c) c[campo] = valor;
+      const el = document.getElementById('c-' + id); if (el && c) el.outerHTML = tarjeta(c); const n = document.getElementById('c-' + id); if (n && actual === id) n.classList.add('sel');
+      showToast('Guardado');
+    }
+
+    async function cambiarPosicion(nueva) {
+      const id = actual, c = todos.find(x => x.id === id); if (!c || !nueva || nueva === c.posicion) return;
+      const { error } = await sb.from('banca_candidatos').update({ posicion: nueva, updated_at: new Date().toISOString() }).eq('id', id);
+      if (error) return showToast('No se pudo cambiar: ' + error.message);
+      c.posicion = nueva; document.getElementById('dSub').textContent = [c.posicion, c.pais === 'RD' ? (c.ciudad || 'RD') : c.pais, c.email, c.telefono].filter(Boolean).join(' · ');
+      pintarInicio();
+      if (carpeta !== null && carpeta !== nueva) { const el = document.getElementById('c-' + id); if (el) el.remove(); vista = vista.filter(x => x.id !== id); mostrados = Math.max(0, mostrados - 1); document.getElementById('lCount').textContent = `${vista.length.toLocaleString()} CVs`; }
+      showToast('Movido a ' + nueva);
+    }
+    async function cambiarNombre(nuevo) {
+      nuevo = nuevo.trim(); if (!nuevo || !actual) return;
+      await guardar(actual, 'nombre', nuevo); document.getElementById('dName').textContent = nuevo;
+    }
+
+    // ---------- Importar: lee banca_import.json de la carpeta elegida, crea las filas y sube los archivos ----------
+    async function importar(fileList) {
+      const files = [...fileList], box = document.getElementById('importBox'), msg = document.getElementById('importMsg'), bar = document.getElementById('importBar');
+      const idx = files.find(f => f.name === 'banca_import.json');
+      if (!idx) return showToast('Esa carpeta no tiene el archivo banca_import.json. Elige la carpeta "Banca por Posicion".');
+      box.style.display = 'block'; msg.textContent = 'Leyendo la lista…';
+      const lista = JSON.parse(await idx.text());
+      const porRuta = {}; files.forEach(f => { const p = f.webkitRelativePath.split('/').slice(1).join('/'); porRuta[p.normalize('NFC')] = f; });
+      for (let i = 0; i < lista.length; i += 500) {
+        const lote = lista.slice(i, i + 500).map(({ rel, ...fila }) => fila);
+        const { error } = await sb.from('banca_candidatos').upsert(lote, { onConflict: 'id', ignoreDuplicates: true });
+        if (error) { msg.textContent = 'Error al guardar la lista: ' + error.message; return; }
+        msg.textContent = `Guardando la lista… ${Math.min(i + 500, lista.length)} de ${lista.length}`; bar.style.width = (Math.min(i + 500, lista.length) / lista.length * 10) + '%';
+      }
+      let ya = new Set();
+      for (let from = 0; ; from += 1000) {
+        const { data, error } = await sb.from('banca_candidatos').select('id').eq('cv_ok', true).range(from, from + 999);
+        if (error || !data.length) break; data.forEach(d => ya.add(d.id)); if (data.length < 1000) break;
+      }
+      const cola = lista.filter(r => !ya.has(r.id)); let hechos = 0, fallos = 0, sinArchivo = 0, okIds = [];
+      const total = cola.length;
+      const marcar = async () => { const ids = okIds.splice(0); if (ids.length) await sb.from('banca_candidatos').update({ cv_ok: true }).in('id', ids); };
+      async function trabajador() {
+        while (cola.length) {
+          const r = cola.shift(), f = porRuta[r.rel.normalize('NFC')];
+          if (!f) { sinArchivo++; }
+          else {
+            const { error } = await sb.storage.from(BUCKET).upload(r.cv_path, f, { upsert: true, contentType: f.type || 'application/octet-stream' });
+            if (error) fallos++; else { okIds.push(r.id); if (okIds.length >= 40) await marcar(); }
+          }
+          hechos++;
+          if (hechos % 5 === 0 || !cola.length) { msg.textContent = `Subiendo CVs… ${hechos} de ${total}` + (fallos ? ` · ${fallos} con error` : ''); bar.style.width = (10 + hechos / Math.max(1, total) * 90) + '%'; }
+        }
+      }
+      await Promise.all([1, 2, 3, 4].map(trabajador)); await marcar();
+      msg.textContent = `Importación terminada: ${total - fallos - sinArchivo} CVs subidos` + (ya.size ? `, ${ya.size} ya estaban` : '') + (fallos ? `, ${fallos} con error (vuelve a importar para reintentar)` : '') + (sinArchivo ? `, ${sinArchivo} sin archivo en la carpeta` : '') + '.';
+      bar.style.width = '100%'; document.getElementById('importDir').value = ''; cargar();
+    }
+  </script>
+</body>
+</html>

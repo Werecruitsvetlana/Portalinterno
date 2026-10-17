@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -186,9 +186,75 @@
     .mora-warn { color: #f59e0b; }
     .mora-danger { color: #dc2626; }
 
+    /* NOTAS */
+    .notas-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .notas-title { font-size: 16px; font-weight: 600; color: #063958; }
+    .notas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+    .nota-card {
+      border-radius: 10px; padding: 16px; min-height: 120px; position: relative;
+      display: flex; flex-direction: column; cursor: pointer; transition: box-shadow 0.15s;
+    }
+    .nota-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .nota-yellow { background: #fef9c3; border-left: 4px solid #eab308; }
+    .nota-blue { background: #dbeafe; border-left: 4px solid #3b82f6; }
+    .nota-green { background: #dcfce7; border-left: 4px solid #16a34a; }
+    .nota-pink { background: #fce7f3; border-left: 4px solid #ec4899; }
+    .nota-gray { background: #f3f4f6; border-left: 4px solid #6b7280; }
+    .nota-titulo { font-size: 14px; font-weight: 600; color: #1a1a1a; margin-bottom: 6px; }
+    .nota-contenido { font-size: 13px; color: #444; line-height: 1.5; flex: 1; white-space: pre-wrap; word-break: break-word; }
+    .nota-fecha { font-size: 11px; color: #888; margin-top: 8px; }
+    .nota-pin { position: absolute; top: 8px; right: 10px; font-size: 14px; opacity: 0.6; }
+    .nota-actions { position: absolute; top: 8px; right: 8px; display: none; gap: 4px; }
+    .nota-card:hover .nota-actions { display: flex; }
+    .nota-card:hover .nota-pin { display: none; }
+    .nota-action-btn {
+      width: 26px; height: 26px; border-radius: 6px; border: none; cursor: pointer;
+      font-size: 13px; display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.7);
+    }
+    .nota-action-btn:hover { background: rgba(255,255,255,0.95); }
+    .nota-add {
+      border: 2px dashed #ccc; border-radius: 10px; min-height: 120px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: #999; font-size: 14px; transition: all 0.15s;
+    }
+    .nota-add:hover { border-color: #0F6B9F; color: #0F6B9F; }
+
+    .nota-modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      z-index: 100; align-items: center; justify-content: center;
+    }
+    .nota-modal-overlay.active { display: flex; }
+    .nota-modal {
+      background: #fff; border-radius: 12px; padding: 28px; width: 100%;
+      max-width: 500px; max-height: 90vh; overflow-y: auto;
+    }
+    .nota-modal h2 { font-size: 18px; color: #063958; margin-bottom: 20px; }
+    .nota-form-group { margin-bottom: 14px; }
+    .nota-form-group label { display: block; font-size: 13px; font-weight: 600; color: #063958; margin-bottom: 5px; }
+    .nota-form-group input, .nota-form-group textarea, .nota-form-group select {
+      width: 100%; padding: 10px 12px; border: 1.5px solid #dde5ed;
+      border-radius: 8px; font-size: 14px; outline: none; font-family: inherit;
+    }
+    .nota-form-group textarea { resize: vertical; min-height: 120px; }
+    .nota-form-group input:focus, .nota-form-group textarea:focus, .nota-form-group select:focus { border-color: #0F6B9F; }
+    .nota-modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    .color-picker { display: flex; gap: 8px; }
+    .color-dot {
+      width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 3px solid transparent;
+      transition: border-color 0.15s;
+    }
+    .color-dot.active { border-color: #063958; }
+    .color-dot-yellow { background: #eab308; }
+    .color-dot-blue { background: #3b82f6; }
+    .color-dot-green { background: #16a34a; }
+    .color-dot-pink { background: #ec4899; }
+    .color-dot-gray { background: #6b7280; }
+
     @media (max-width: 900px) {
       .grid-2 { grid-template-columns: 1fr; }
       .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .notas-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
@@ -197,11 +263,12 @@
     <div class="sidebar-logo">We Recruit DR</div>
     <a href="index.html" class="active">📊 Dashboard</a>
     <a href="candidatos.html">👤 Candidatos</a>
+    <a href="banca.html">🗂️ Banca de Candidatos</a>
     <a href="posiciones.html">💼 Posiciones</a>
+    <a href="vacantes-abiertas.html">⏱️ Vacantes Abiertas</a>
     <a href="ternas.html">📋 Ternas</a>
     <a href="empresas.html">🏢 Empresas</a>
     <a href="freelancers.html">🎨 Freelancers</a>
-    <a href="vacantes-portal.html">📝 Vacantes Portal</a>
     <div class="sidebar-bottom">
       <button onclick="logout()">Cerrar sesión</button>
     </div>
@@ -322,6 +389,52 @@
       </div>
       <div id="recentActivity">
         <div class="empty-msg">Cargando...</div>
+      </div>
+    </div>
+
+    <!-- Centro de Notas -->
+    <div class="section" style="margin-top: 8px;">
+      <div class="notas-header">
+        <span class="notas-title">Mis Notas</span>
+        <button class="btn btn-primary btn-sm" onclick="openNotaModal()">+ Nueva nota</button>
+      </div>
+      <div id="notasGrid" class="notas-grid">
+        <div class="empty-msg" style="grid-column:1/-1;">Cargando notas...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Nota -->
+  <div class="nota-modal-overlay" id="notaModalOverlay" onclick="if(event.target===this)closeNotaModal()">
+    <div class="nota-modal">
+      <h2 id="notaModalTitle">Nueva nota</h2>
+      <input type="hidden" id="notaId">
+      <div class="nota-form-group">
+        <label>Título</label>
+        <input type="text" id="notaTitulo" placeholder="Ej: Seguimiento cliente X">
+      </div>
+      <div class="nota-form-group">
+        <label>Contenido</label>
+        <textarea id="notaContenido" placeholder="Escribe tu nota aquí..."></textarea>
+      </div>
+      <div class="nota-form-group">
+        <label>Color</label>
+        <div class="color-picker" id="colorPicker">
+          <div class="color-dot color-dot-yellow active" data-color="yellow" onclick="pickColor('yellow')"></div>
+          <div class="color-dot color-dot-blue" data-color="blue" onclick="pickColor('blue')"></div>
+          <div class="color-dot color-dot-green" data-color="green" onclick="pickColor('green')"></div>
+          <div class="color-dot color-dot-pink" data-color="pink" onclick="pickColor('pink')"></div>
+          <div class="color-dot color-dot-gray" data-color="gray" onclick="pickColor('gray')"></div>
+        </div>
+      </div>
+      <div class="nota-form-group" style="display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" id="notaFijada" style="width:auto;">
+        <label for="notaFijada" style="margin:0;cursor:pointer;">Fijar nota arriba</label>
+      </div>
+      <div class="nota-modal-actions">
+        <button class="btn btn-secondary" onclick="closeNotaModal()">Cancelar</button>
+        <button class="btn btn-danger" id="notaDeleteBtn" style="display:none;" onclick="deleteNota()">Eliminar</button>
+        <button class="btn btn-primary" onclick="saveNota()">Guardar</button>
       </div>
     </div>
   </div>
@@ -584,6 +697,91 @@
           </div>`;
         }).join('');
       }
+
+      loadNotas();
+    }
+
+    // ===== CENTRO DE NOTAS =====
+    let notaColor = 'yellow';
+
+    function pickColor(c) {
+      notaColor = c;
+      document.querySelectorAll('#colorPicker .color-dot').forEach(d => d.classList.toggle('active', d.dataset.color === c));
+    }
+
+    function openNotaModal(nota) {
+      document.getElementById('notaModalTitle').textContent = nota ? 'Editar nota' : 'Nueva nota';
+      document.getElementById('notaId').value = nota ? nota.id : '';
+      document.getElementById('notaTitulo').value = nota ? nota.titulo : '';
+      document.getElementById('notaContenido').value = nota ? (nota.contenido || '') : '';
+      document.getElementById('notaFijada').checked = nota ? nota.fijada : false;
+      document.getElementById('notaDeleteBtn').style.display = nota ? 'inline-block' : 'none';
+      pickColor(nota ? nota.color : 'yellow');
+      document.getElementById('notaModalOverlay').classList.add('active');
+    }
+
+    function closeNotaModal() {
+      document.getElementById('notaModalOverlay').classList.remove('active');
+    }
+
+    async function saveNota() {
+      const id = document.getElementById('notaId').value;
+      const titulo = document.getElementById('notaTitulo').value.trim() || 'Sin título';
+      const contenido = document.getElementById('notaContenido').value.trim();
+      const fijada = document.getElementById('notaFijada').checked;
+      const record = { titulo, contenido, color: notaColor, fijada };
+
+      if (id) {
+        await sb.from('notas').update(record).eq('id', id);
+      } else {
+        await sb.from('notas').insert([record]);
+      }
+      closeNotaModal();
+      loadNotas();
+    }
+
+    async function deleteNota() {
+      const id = document.getElementById('notaId').value;
+      if (!id) return;
+      if (!confirm('¿Eliminar esta nota?')) return;
+      await sb.from('notas').delete().eq('id', id);
+      closeNotaModal();
+      loadNotas();
+    }
+
+    async function togglePin(id, current) {
+      await sb.from('notas').update({ fijada: !current }).eq('id', id);
+      loadNotas();
+    }
+
+    async function loadNotas() {
+      const el = document.getElementById('notasGrid');
+      const { data, error } = await sb.from('notas').select('*').order('fijada', { ascending: false }).order('updated_at', { ascending: false });
+
+      if (error) {
+        el.innerHTML = '<div class="empty-msg" style="grid-column:1/-1;">Error al cargar notas.</div>';
+        return;
+      }
+
+      const notas = data || [];
+      if (notas.length === 0) {
+        el.innerHTML = `<div class="nota-add" onclick="openNotaModal()">+ Crear mi primera nota</div>`;
+        return;
+      }
+
+      el.innerHTML = notas.map(n => {
+        const fecha = new Date(n.updated_at).toLocaleDateString('es-DO', { day: 'numeric', month: 'short' });
+        const preview = (n.contenido || '').substring(0, 150) + ((n.contenido || '').length > 150 ? '...' : '');
+        return `<div class="nota-card nota-${n.color}" onclick="openNotaModal(${JSON.stringify(n).replace(/"/g, '&quot;')})">
+          ${n.fijada ? '<span class="nota-pin">📌</span>' : ''}
+          <div class="nota-actions">
+            <button class="nota-action-btn" title="${n.fijada ? 'Desfijar' : 'Fijar'}" onclick="event.stopPropagation();togglePin('${n.id}',${n.fijada})">📌</button>
+          </div>
+          <div class="nota-titulo">${n.titulo}</div>
+          <div class="nota-contenido">${preview}</div>
+          <div class="nota-fecha">${fecha}</div>
+        </div>`;
+      }).join('') + `<div class="nota-add" onclick="openNotaModal()">+ Nueva nota</div>`;
     }
   </script>
 </body>
